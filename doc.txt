@@ -1,0 +1,15 @@
+activation formula
+calcualte weights from the inputs, add them up and add bias. then decide if its activated or not
+using threshold.
+
+
+final step evaluate predicted output vs expected output through cost function
+MSE, cross entropy
+based on this value model know how much to adjust its parametrs
+
+backpropagation algo
+which is repeadetly adjusting weaights and biases to minimaze this cost
+level of adjustment is determined by the gradient of cost function with respect to parameters
+
+gradient descent - minimize cost
+inputs mulyiplied by weights
