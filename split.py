@@ -45,15 +45,17 @@ def parse(file_path):
         aucs[feature] = auc
 
     rows, cols = 5, 6
-    fig, axes = plt.subplots(rows, cols)
-    
-    for i, feature in enumerate(features):
-        ax = axes[i]
-        ax.hist(df[df['diagnosis']==0][feature], alpha=0.5, label="B (0)")
-        ax.hist(df[df['diagnosis']==1][feature], alpha=0.5, label="M (1)")
-        ax.set_tile(feature)
+    fig, axes = plt.subplots(rows, cols, figsize=(12, 10))
+    index = 0
+    for i in range(rows):
+        for j in range(cols):
+            feature = features[index]
+            ax = axes[i][j]
+            ax.hist(df[df['diagnosis']==0][feature], alpha=0.5, label="B (0)")
+            ax.hist(df[df['diagnosis']==1][feature], alpha=0.5, label="M (1)")
+            ax.set_title(feature)
+            index += 1
     plt.tight_layout()
-    plt.suptitle("Histograms of features by diagnosis")
     plt.show()
     #df.hist(figsize=(12, 10), bins=20)
     #plt.tight_layout()
