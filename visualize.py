@@ -2,15 +2,20 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import roc_auc_score
 
 
-def plot_feature_histograms(df):
-    #print("INFO: ", df.info())
+def diagnosis_bar(df):
     counts = df["diagnosis"].value_counts().sort_index()
-    plt.bar(counts, counts.values)
+    plt.figure(figsize=(10, 10))
+    plt.bar(counts.index, counts.values)
+    for i, val in enumerate(counts.values):
+        plt.text(counts.index[i], val + 4, str(val))
     plt.xlabel("diagnosis (B, M)")
     plt.ylabel("count")
     plt.tight_layout()
     plt.show()
-    df = df.drop(columns=['id'])
+
+
+def plot_feature_histograms(df):
+    diagnosis_bar(df)
 
     features = [c for c in df.columns if c not in ["id", "diagnosis"]]
     y = df['diagnosis']
