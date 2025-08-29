@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-from sklearn.metrics import roc_auc_score
 
 
 def diagnosis_bar(df):
@@ -18,13 +17,6 @@ def plot_feature_histograms(df):
     diagnosis_bar(df)
 
     features = [c for c in df.columns if c not in ["id", "diagnosis"]]
-    y = df['diagnosis']
-    aucs = {}
-    for feature in features:
-        auc = roc_auc_score(y, df[feature])
-        print(f'AUC for {feature} is {auc}')
-        aucs[feature] = auc
-
     rows, cols = 5, 6
     fig, axes = plt.subplots(rows, cols, figsize=(12, 10))
     index = 0

@@ -3,10 +3,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from visualize import plot_feature_histograms
+from sklearn.metrics import roc_auc_score
 
 
 fraction = 0.2
-
+auc_threshold = 0.55
+corr_threshold = 0.9
 columns = [
     "id", "diagnosis",
     "radius_mean", "texture_mean", "perimeter_mean", "area_mean", "smoothness_mean",
@@ -54,6 +56,37 @@ def parse(file_path):
     #plt.show()
 
 
+def reduce_noise(df):
+    features = [c for c in df.columns if c not in ["id", "diagnosis"]]
+    y = df['diagnosis']
+    aucs = {}
+
+    # Remove features which have low AUC meaning they don't difenciate a lot between diagnosis
+    for feature in features:
+        auc = roc_auc_score(y, df[feature])
+        if auc <= auc_threshold:
+            df.drop(feature, axis=1, inplace=True)
+            print(f'removing AUC for {feature} is {auc}')
+        aucs[feature] = auc
+
+    # Remove features which which overlap a lot using correlation matrix
+    matrix = df.corr()
+    overlaped = {}
+    for i, feature_1 in enumerate(features):
+        for j, feature_2 in enumerate(features):
+            if i < j:
+                corr_value = abs(matrix[feature_1, feature_2])
+                if corr_value >= corr_threshold:
+                    overlaped[feature_1, feature_2] = corr_value
+                    print(f'adding to overlaped {feature_1} and {feature_2}. VALUE: {corr_value}')
+            else:
+                continue
+    
+    for key, value in overlaped.items():
+        if aucs[key[0]] < aucs[key[1]]: # lacks checking if the feature is in another pair as well
+            df = df.drop(columns=[aucs[key[0]]])
+
+
 def main():
     parser = argparse.ArgumentParser(description='EDA')
     parser.add_argument('dataset')
@@ -64,9 +97,10 @@ def main():
     if args.plots:
         plot_feature_histograms(df)
     
-    test, train = split_dataset(df)
-    test.to_csv("test.csv", index=False)
-    train.to_csv("train.csv", index=False)
+    reduce_noise(df)
+    # test, train = split_dataset(df)
+    # test.to_csv("test.csv", index=False)
+    # train.to_csv("train.csv", index=False)
     #if (len(sys.argv) < 2):
     #    print("Usage: python3 ./split.py dataset flag(optional)") 
 
