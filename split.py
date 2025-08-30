@@ -66,6 +66,7 @@ def reduce_noise(df):
         auc = roc_auc_score(y, df[feature])
         if auc <= auc_threshold:
             df.drop(feature, axis=1, inplace=True)
+            features.remove(feature)
             print(f'removing AUC for {feature} is {auc}')
         aucs[feature] = auc
 
@@ -75,7 +76,7 @@ def reduce_noise(df):
     for i, feature_1 in enumerate(features):
         for j, feature_2 in enumerate(features):
             if i < j:
-                corr_value = abs(matrix[feature_1, feature_2])
+                corr_value = abs(matrix.loc[feature_1, feature_2])
                 if corr_value >= corr_threshold:
                     overlaped[feature_1, feature_2] = corr_value
                     print(f'adding to overlaped {feature_1} and {feature_2}. VALUE: {corr_value}')
@@ -83,8 +84,11 @@ def reduce_noise(df):
                 continue
     
     for key, value in overlaped.items():
+        #print("AAA: ", key[0])
         if aucs[key[0]] < aucs[key[1]]: # lacks checking if the feature is in another pair as well
-            df = df.drop(columns=[aucs[key[0]]])
+            df = df.drop(columns=[key[0]])
+        else:
+            df = df.drop(columns=[key[1]])
 
 
 def main():
