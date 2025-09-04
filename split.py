@@ -1,6 +1,4 @@
 import argparse
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 from visualize import plot_feature_histograms
 from sklearn.metrics import roc_auc_score
@@ -56,7 +54,7 @@ def parse(file_path):
     #plt.show()
 
 
-def reduce_noise(df):
+def reduce_noise(test, df):
     features = [c for c in df.columns if c not in ["id", "diagnosis"]]
     y = df['diagnosis']
     aucs = {}
@@ -66,6 +64,7 @@ def reduce_noise(df):
         auc = roc_auc_score(y, df[feature])
         if auc <= auc_threshold:
             df.drop(feature, axis=1, inplace=True)
+            test.drop(feature, axis=1, inplace=True)
             features.remove(feature)
             print(f'removing AUC for {feature} is {auc}')
         aucs[feature] = auc
@@ -82,8 +81,9 @@ def reduce_noise(df):
     print(feature_importance_df)
     features_to_remove = feature_importance_df[feature_importance_df['importance'] <= 0.01]['feature']
     df.drop(columns=features_to_remove, axis=1, inplace=True)
-    print(features_to_remove)
+    test.drop(columns=features_to_remove, axis=1, inplace=True)
 
+    return test, df
     # Remove features which which overlap a lot using correlation matrix
     # matrix = df.corr()
     # overlaped = {}
@@ -116,12 +116,9 @@ def main():
         plot_feature_histograms(df)
     
     test, train = split_dataset(df)
-    reduce_noise(train)
-    # remove features from test df as well
-    # test.to_csv("test.csv", index=False)
-    # train.to_csv("train.csv", index=False)
-    #if (len(sys.argv) < 2):
-    #    print("Usage: python3 ./split.py dataset flag(optional)") 
+    test, train = reduce_noise(test, train)
+    test.to_csv("test.csv", index=False)
+    train.to_csv("train.csv", index=False)
 
 
 if __name__ == "__main__":
