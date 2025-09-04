@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from visualize import plot_feature_histograms
 from sklearn.metrics import roc_auc_score
-
+from sklearn.ensemble import RandomForestClassifier
 
 fraction = 0.2
 auc_threshold = 0.55
@@ -60,7 +60,7 @@ def reduce_noise(df):
     features = [c for c in df.columns if c not in ["id", "diagnosis"]]
     y = df['diagnosis']
     aucs = {}
-
+    to_remove = []
     # Remove features which have low AUC meaning they don't difenciate a lot between diagnosis
     for feature in features:
         auc = roc_auc_score(y, df[feature])
@@ -70,25 +70,39 @@ def reduce_noise(df):
             print(f'removing AUC for {feature} is {auc}')
         aucs[feature] = auc
 
+    rf = RandomForestClassifier(random_state=42)
+    X_train = df.drop(columns=['diagnosis'])
+    rf.fit(X_train, y)
+    importances = rf.feature_importances_
+    feature_importance_df = pd.DataFrame({
+        'feature': X_train.columns,
+        'importance': importances
+    }).sort_values(by='importance', ascending=False)
+
+    print(feature_importance_df)
+    features_to_remove = feature_importance_df[feature_importance_df['importance'] <= 0.01]['feature']
+    df.drop(columns=features_to_remove, axis=1, inplace=True)
+    print(features_to_remove)
+
     # Remove features which which overlap a lot using correlation matrix
-    matrix = df.corr()
-    overlaped = {}
-    for i, feature_1 in enumerate(features):
-        for j, feature_2 in enumerate(features):
-            if i < j:
-                corr_value = abs(matrix.loc[feature_1, feature_2])
-                if corr_value >= corr_threshold:
-                    overlaped[feature_1, feature_2] = corr_value
-                    print(f'adding to overlaped {feature_1} and {feature_2}. VALUE: {corr_value}')
-            else:
-                continue
+    # matrix = df.corr()
+    # overlaped = {}
+    # for i, feature_1 in enumerate(features):
+    #     for j, feature_2 in enumerate(features):
+    #         if i < j:
+    #             corr_value = abs(matrix.loc[feature_1, feature_2])
+    #             if corr_value >= corr_threshold:
+    #                 overlaped[feature_1, feature_2] = corr_value
+    #                 print(f'adding to overlaped {feature_1} and {feature_2}. VALUE: {corr_value}')
+    #         else:
+    #             continue
     
-    for key, value in overlaped.items():
-        #print("AAA: ", key[0])
-        if aucs[key[0]] < aucs[key[1]]: # lacks checking if the feature is in another pair as well
-            df = df.drop(columns=[key[0]])
-        else:
-            df = df.drop(columns=[key[1]])
+    # for key, value in overlaped.items():
+    #     #print("AAA: ", key[0])
+    #     if aucs[key[0]] < aucs[key[1]]: # lacks checking if the feature is in another pair as well
+    #         df = df.drop(columns=[key[0]])
+    #     else:
+    #         df = df.drop(columns=[key[1]])
 
 
 def main():
@@ -101,8 +115,9 @@ def main():
     if args.plots:
         plot_feature_histograms(df)
     
-    reduce_noise(df)
-    # test, train = split_dataset(df)
+    test, train = split_dataset(df)
+    reduce_noise(train)
+    # remove features from test df as well
     # test.to_csv("test.csv", index=False)
     # train.to_csv("train.csv", index=False)
     #if (len(sys.argv) < 2):
