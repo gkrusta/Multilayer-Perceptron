@@ -3,7 +3,7 @@ import argparse
 
 
 epoch = 10
-learning_rate = 0.1
+learning_rate = 0.01
 
 
 
