@@ -5,7 +5,7 @@ import argparse
 epoch = 10
 learning_rate = 0.01
 
-
+#backpropogation (−(y−y^​))⋅(y^​(1−y^​))⋅x
 
 def train():
     weighted_sum = np.dot(x, weights)
