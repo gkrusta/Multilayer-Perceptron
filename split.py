@@ -105,6 +105,21 @@ def reduce_noise(test, df):
     #         df = df.drop(columns=[key[1]])
 
 
+def normalize(test, train):
+    train_features = train.drop(columns=['diagnosis'])
+    test_features = test.drop(columns=['diagnosis'])
+    mean = train_features.mean()
+    std = train_features.std()
+
+    train_norm = (train_features - mean) / std
+    test_norm = (test_features - mean) / std
+
+    train_norm['diagnosis'] = train['diagnosis'].values
+    test_norm['diagnosis'] = test['diagnosis'].values
+
+    return test_norm, train_norm
+
+
 def main():
     parser = argparse.ArgumentParser(description='EDA')
     parser.add_argument('dataset')
@@ -117,6 +132,7 @@ def main():
     
     test, train = split_dataset(df)
     test, train = reduce_noise(test, train)
+    test, train = normalize(test, train)
     test.to_csv("test.csv", index=False)
     train.to_csv("train.csv", index=False)
 
