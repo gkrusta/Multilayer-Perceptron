@@ -3,27 +3,12 @@ import pandas as pd
 from visualize import plot_feature_histograms
 from sklearn.metrics import roc_auc_score
 from sklearn.ensemble import RandomForestClassifier
+from utils import open_file
+
 
 fraction = 0.2
 auc_threshold = 0.55
 corr_threshold = 0.9
-columns = [
-    "id", "diagnosis",
-    "radius_mean", "texture_mean", "perimeter_mean", "area_mean", "smoothness_mean",
-    "compactness_mean", "concavity_mean", "concave_points_mean", "symmetry_mean", "fractal_dimension_mean",
-    "radius_se", "texture_se", "perimeter_se", "area_se", "smoothness_se",
-    "compactness_se", "concavity_se", "concave_points_se", "symmetry_se", "fractal_dimension_se",
-    "radius_worst", "texture_worst", "perimeter_worst", "area_worst", "smoothness_worst",
-    "compactness_worst", "concavity_worst", "concave_points_worst", "symmetry_worst", "fractal_dimension_worst"
-]
-
-def open_file(file_path):
-    try:
-        data = pd.read_csv(file_path, names=columns)
-        return data
-    except Exception as e:
-        print(e)
-        exit(1)
 
 
 def split_dataset(df):
@@ -43,7 +28,7 @@ def split_dataset(df):
 
 
 def parse(file_path):
-    df = open_file(file_path)
+    df = open_file(file_path, header_in_file=False)
     #print("INFO: ", df.info())
     if 'id' in df.columns:
         df = df.drop(columns=['id'])
@@ -110,7 +95,6 @@ def normalize(test, train):
     test_features = test.drop(columns=['diagnosis'])
     mean = train_features.mean()
     std = train_features.std()
-
     train_norm = (train_features - mean) / std
     test_norm = (test_features - mean) / std
 
