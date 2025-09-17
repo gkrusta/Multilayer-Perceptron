@@ -24,7 +24,9 @@ class Layer:
 
         return self.activations
 
-        
+
+    def categoricalCrossentropy()
+
     
     def backward(self, grad_output, learning_rate):
         ...

@@ -47,7 +47,7 @@ def main():
     parser.add_argument('--layer', nargs="+", type=int)
     #parser.add_argument('test_set', type=str, required=True)
     # parser.add_argument('--epochs', action='store_true')
-    # parser.add_argument('--los', action='store_true')
+    # parser.add_argument('--loss', action='store_true')
     # parser.add_argument('--batch_size', action='store_true')
     # parser.add_argument('--learning_rate', action='store_true')
 
@@ -56,7 +56,7 @@ def main():
     model = NeuronalNetwork(args.train_set, args.layer)
     model.create_layers()
     model.train()
-    
+
 
 if __name__ == "__main__":
     main()
