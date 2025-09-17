@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 
 columns = [
@@ -25,7 +26,7 @@ def open_file(file_path, header_in_file=True):
 
 
 def relu(x):
-    return max(0.0, x)
+    return x * (x > 0)
 
 
 def relu_der(x):
@@ -35,5 +36,6 @@ def relu_der(x):
         return 0
 
 
-    # def sigmoid(x):
-    #     return (1 / (1 + np.exp(-x)))
+def softmax(x):
+    exp_logits = np.exp(x - np.max(x, axis=1, keepdims=True))
+    return exp_logits / np.sum(exp_logits, axis=1, keepdims=True) 

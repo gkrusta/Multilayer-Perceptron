@@ -12,8 +12,10 @@ class NeuronalNetwork:
         df = open_file(train_set)
         self.numer_of_inputs = df.drop(columns=['diagnosis']).shape[1]
         self.hiden_layers = layer
-        self.train_set = train_set
+        self.X = df.iloc[:, :-1].values
+        self.Y = df.iloc[:, -1].values
         self.output_size = 2
+        self.cache = {}
 
 
 # def categorical_cross_entropy()
@@ -31,16 +33,12 @@ class NeuronalNetwork:
             self.layers.append(layer)
 
 
-
-    def train(x, weights):
-        weighted_sum = np.dot(x, weights)
-        prediction = sigmoid(weighted_sum)
-
-        # loss = MSE
-        # backpropogation
-        # gradients for weight and bias
-        # actulize weights and bias using leanring rate
-
+    def train(self):
+        self.cache = {'A0': self.X}
+        for l in range(1, len(self.layer_sizes)):
+            A_prev = self.cache[f'A{l - 1}']
+            prediction = self.layers[l - 1].forward(l, A_prev)
+            self.cache.update(prediction)
 
 
 def main():
@@ -57,6 +55,7 @@ def main():
 
     model = NeuronalNetwork(args.train_set, args.layer)
     model.create_layers()
+    model.train()
     
 
 if __name__ == "__main__":
