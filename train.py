@@ -13,7 +13,8 @@ class NeuronalNetwork:
         self.numer_of_inputs = df.drop(columns=['diagnosis']).shape[1]
         self.hiden_layers = layer
         self.X = df.iloc[:, :-1].values
-        self.Y = df.iloc[:, -1].values
+        y = df.iloc[:, -1].values
+        self.Y = np.eye(2)[y.astype(int)]
         self.output_size = 2
         self.cache = {}
 
@@ -39,6 +40,8 @@ class NeuronalNetwork:
             A_prev = self.cache[f'A{l - 1}']
             prediction = self.layers[l - 1].forward(l, A_prev)
             self.cache.update(prediction)
+        print("L HERE: ", l)
+        loss = self.layers[l - 1].categoricalCrossentropy(self.Y, self.cache[f'A{l}'])
 
 
 def main():

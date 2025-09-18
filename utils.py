@@ -29,7 +29,7 @@ def relu(x):
     return x * (x > 0)
 
 
-def relu_der(x):
+def relu_backward(x):
     if x > 0:
         return x
     else:
@@ -38,4 +38,8 @@ def relu_der(x):
 
 def softmax(x):
     exp_logits = np.exp(x - np.max(x, axis=1, keepdims=True))
-    return exp_logits / np.sum(exp_logits, axis=1, keepdims=True) 
+    return exp_logits / np.sum(exp_logits, axis=1, keepdims=True)
+
+
+def softmax_backward(x):
+    

@@ -1,6 +1,7 @@
 import numpy as np
 from utils import relu, softmax
 
+
 class Layer:
     def __init__(self, previous_l, current_l, activation):
         limit = np.sqrt(6 / current_l)
@@ -25,7 +26,12 @@ class Layer:
         return self.activations
 
 
-    def categoricalCrossentropy()
+    def categoricalCrossentropy(self, y_true, y_pred):
+        epsilon = 1e-12
+        y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
+        loss = -np.sum(y_true * np.log(y_pred), axis=1)
+
+        return np.mean(loss)  
 
     
     def backward(self, grad_output, learning_rate):
