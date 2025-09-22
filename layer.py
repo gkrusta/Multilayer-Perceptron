@@ -1,5 +1,5 @@
 import numpy as np
-from utils import relu, softmax
+from utils import relu, softmax, relu_backward
 
 
 class Layer:
@@ -34,5 +34,13 @@ class Layer:
         return np.mean(loss)  
 
     
-    def backward(self, grad_output, learning_rate):
-        ...
+    def backward(self, dA, layer, l):
+        print("DA ", dA)
+        m = dA.shape[0]
+        if self.activation is 'relu':
+            dZ = dA * relu_backward(layer[f'Z{l}'])
+        elif self.activation is "softmax":
+            dZ = dA
+        else:
+            raise Exception('Non-supported activation function')
+       

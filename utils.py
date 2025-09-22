@@ -41,5 +41,5 @@ def softmax(x):
     return exp_logits / np.sum(exp_logits, axis=1, keepdims=True)
 
 
-def softmax_backward(x):
+#def softmax_backward(x):
     

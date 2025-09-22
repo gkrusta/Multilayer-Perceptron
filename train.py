@@ -42,6 +42,9 @@ class NeuronalNetwork:
             self.cache.update(prediction)
         print("L HERE: ", l)
         loss = self.layers[l - 1].categoricalCrossentropy(self.Y, self.cache[f'A{l}'])
+        print("LOSS ", loss)
+        for l in reversed(range(l, len(self.layer_sizes))):
+            self.layers[l - 1].backward(loss, self.layers[l - 1], l)
 
 
 def main():
@@ -59,6 +62,7 @@ def main():
     model = NeuronalNetwork(args.train_set, args.layer)
     model.create_layers()
     model.train()
+    
 
 
 if __name__ == "__main__":
