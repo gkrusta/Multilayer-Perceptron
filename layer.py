@@ -12,6 +12,7 @@ class Layer:
         self.activations = {}
 
 
+
     def forward(self, l, X):
         A = X
         Z = np.dot(X, self.weights) + self.biases
@@ -28,19 +29,26 @@ class Layer:
 
     def categoricalCrossentropy(self, y_true, y_pred):
         epsilon = 1e-12
+        m = y_true.shape[0]
         y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
-        loss = -np.sum(y_true * np.log(y_pred), axis=1)
+        loss = -np.sum(y_true * np.log(y_pred)) / m
+        dA = (y_pred - y_true) / m
 
-        return np.mean(loss)  
+        return loss, dA
 
-    
+
     def backward(self, dA, layer, l):
-        print("DA ", dA)
         m = dA.shape[0]
-        if self.activation is 'relu':
+        dA_prev = self.activations[f'A{l}']
+
+        if self.activation == 'relu':
             dZ = dA * relu_backward(layer[f'Z{l}'])
-        elif self.activation is "softmax":
+        elif self.activation == "softmax":
             dZ = dA
         else:
             raise Exception('Non-supported activation function')
-       
+        dW = np.dot(dA_prev.T, dZ) / m
+        dB = np.sum(dZ, axis=0, keepdims=True) / m
+        dA_prev = np.dot(dZ, layer.weights.T)
+        print("1 DW: ", dW)
+        return dA, dW, dB
