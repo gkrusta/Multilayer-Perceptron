@@ -13,3 +13,7 @@ level of adjustment is determined by the gradient of cost function with respect 
 
 gradient descent - minimize cost
 inputs mulyiplied by weights
+
+
+tests
+python3 ./train.py train.csv test.csv --layer 3 2 --epochs 20 --learning_rate 0.01

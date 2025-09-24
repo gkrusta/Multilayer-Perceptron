@@ -1,6 +1,14 @@
 import matplotlib.pyplot as plt
 
 
+def plot_loss(loss, val_loss, acc, val_acc):
+    plt.plot(loss)
+    plt.plot(val_loss)
+    plt.legend(["training loss", "validation loss"])
+    plt.grid()
+    plt.show()
+
+
 def diagnosis_bar(df):
     counts = df["diagnosis"].value_counts().sort_index()
     plt.figure(figsize=(10, 10))

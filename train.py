@@ -2,7 +2,9 @@ from functools import cache
 import numpy as np
 import argparse
 from utils import open_file
+from visualize import plot_loss
 from layer import Layer
+from sklearn.metrics import accuracy_score
 
 
 class NeuronalNetwork:
@@ -18,6 +20,12 @@ class NeuronalNetwork:
         self.epochs = epochs
         self.cache = {}
         self.first = True
+        self.history = {
+            "loss": [],
+            "val_loss": [],
+            "acc": [],
+            "val_acc": []
+        }
 
 
     def __call__(self, epoch, loss, val_loss):
@@ -26,6 +34,20 @@ class NeuronalNetwork:
             print("x_valid shape : ", self.test_set.shape)
             self.first = False
         print(f"epoch {epoch:02d}/{self.epochs} - loss: {loss:.8f} - val_loss: {val_loss:.8f}")
+
+
+    def save_metrics(self, loss, val_loss, val_y_pred):
+        y_pred = np.argmax(self.cache[f'A{len(self.layer_sizes) - 1}'], axis=1)
+        y_true = np.argmax(self.Y, axis=1)
+        y_val_pred = np.argmax(self.test_Y, axis=1)
+        y_val_pred = np.argmax(val_y_pred, axis=1)
+        acc = accuracy_score(y_true, y_pred)
+        val_acc = accuracy_score(y_val_pred, y_val_pred)
+        
+        self.history["loss"].append(loss)
+        self.history["val_loss"].append(val_loss)
+        self.history["acc"].append(acc)
+        self.history["val_acc"].append(val_acc)
 
 
     def create_layers(self, activation='relu', output_activation='softmax'):
@@ -43,7 +65,7 @@ class NeuronalNetwork:
     def forward_only(self):
         X = self.test_set.iloc[:, :-1].values
         y = self.test_set.iloc[:, -1].values
-        Y = np.eye(2)[y.astype(int)]
+        self.test_Y = np.eye(2)[y.astype(int)]
         val_cache = {'A0': X}
 
         for l in range(1, len(self.layer_sizes)):
@@ -52,8 +74,8 @@ class NeuronalNetwork:
             val_cache.update(prediction)
 
         A_last = val_cache[f"A{len(self.layer_sizes) - 1}"]
-        val_loss, _ = self.layers[-1].categoricalCrossentropy(Y, A_last)
-        return val_loss
+        val_loss, _ = self.layers[-1].categoricalCrossentropy(self.test_Y, A_last)
+        return A_last, val_loss
 
 
     def train(self, log, learning_rate):
@@ -68,10 +90,11 @@ class NeuronalNetwork:
             for l in reversed(range(l, len(self.layer_sizes))):
                 dA_prev, dW, dB = self.layers[l - 1].backward(dA, self.layers[l - 1], l)
                 dA = dA_prev
-                print("2 DB: ", dB.shape)
+                print("2 dW: ", dW.shape)
                 self.layers[l - 1].weights -= learning_rate * dW
                 self.layers[l - 1].biases -= learning_rate * dB
-            val_loss = self.forward_only()
+            val_pred, val_loss = self.forward_only()
+            self.save_metrics(loss, val_loss, val_pred)
             log(epoch, loss, val_loss)
 
 
@@ -90,7 +113,7 @@ def main():
     model = NeuronalNetwork(args.train_set, args.test_set, args.layer, args.epochs)
     model.create_layers()
     model.train(model, args.learning_rate)
-    
+    plot_loss(model.history['loss'], model.history['val_loss'], model.history['acc'], model.history['val_acc'])
 
 
 if __name__ == "__main__":
