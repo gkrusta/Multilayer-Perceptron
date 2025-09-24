@@ -22,7 +22,6 @@ class Layer:
             A = softmax(Z)
         self.activations[f'Z{l}'] = Z
         self.activations[f'A{l}'] = A
-        
 
         return self.activations
 
@@ -32,23 +31,23 @@ class Layer:
         m = y_true.shape[0]
         y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
         loss = -np.sum(y_true * np.log(y_pred)) / m
-        dA = (y_pred - y_true) / m
+        dA = (y_pred - y_true)
 
         return loss, dA
 
 
     def backward(self, dA, layer, l):
         m = dA.shape[0]
-        dA_prev = self.activations[f'A{l}']
+        dA_prev = layer[f'A{l - 1}']
 
         if self.activation == 'relu':
             dZ = dA * relu_backward(layer[f'Z{l}'])
-        elif self.activation == "softmax":
+        elif self.activation == 'softmax':
             dZ = dA
         else:
             raise Exception('Non-supported activation function')
         dW = np.dot(dA_prev.T, dZ) / m
         dB = np.sum(dZ, axis=0, keepdims=True) / m
-        dA_prev = np.dot(dZ, layer.weights.T)
+        dA_prev = np.dot(dZ, self.weights.T)
         print("1 DW: ", dW)
-        return dA, dW, dB
+        return dA_prev, dW, dB

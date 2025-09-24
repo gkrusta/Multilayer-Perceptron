@@ -2,10 +2,23 @@ import matplotlib.pyplot as plt
 
 
 def plot_loss(loss, val_loss, acc, val_acc):
-    plt.plot(loss)
-    plt.plot(val_loss)
-    plt.legend(["training loss", "validation loss"])
-    plt.grid()
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(18,16))
+    ax1.plot(loss)
+    ax1.plot(val_loss)
+    ax1.set_title("Loss", fontsize=22)
+    ax1.legend(["training loss", "validation loss"])
+    ax1.set_xlabel('epochs', fontsize=14)
+    ax1.set_ylabel('loss', fontsize=14)
+    ax1.tick_params(axis='both', labelsize=12)
+    ax1.grid(linestyle='-.')
+
+    ax2.plot(acc)
+    ax2.plot(val_acc)
+    ax2.set_title("Accuracy", fontsize=22)
+    ax2.legend(["training acc", "validation acc"])
+    ax2.set_xlabel('epochs', fontsize=14)
+    ax2.set_ylabel('accuracy', fontsize=14)
+    ax2.tick_params(axis='both', labelsize=12)
     plt.show()
 
 

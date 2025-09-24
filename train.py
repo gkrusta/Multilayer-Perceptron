@@ -39,11 +39,11 @@ class NeuronalNetwork:
     def save_metrics(self, loss, val_loss, val_y_pred):
         y_pred = np.argmax(self.cache[f'A{len(self.layer_sizes) - 1}'], axis=1)
         y_true = np.argmax(self.Y, axis=1)
-        y_val_pred = np.argmax(self.test_Y, axis=1)
+        y_val_true = np.argmax(self.test_Y, axis=1)
         y_val_pred = np.argmax(val_y_pred, axis=1)
         acc = accuracy_score(y_true, y_pred)
-        val_acc = accuracy_score(y_val_pred, y_val_pred)
-        
+        val_acc = accuracy_score(y_val_true, y_val_pred)
+
         self.history["loss"].append(loss)
         self.history["val_loss"].append(val_loss)
         self.history["acc"].append(acc)
@@ -88,9 +88,9 @@ class NeuronalNetwork:
             loss, dA = self.layers[l - 1].categoricalCrossentropy(self.Y, self.cache[f'A{l}'])
 
             for l in reversed(range(l, len(self.layer_sizes))):
-                dA_prev, dW, dB = self.layers[l - 1].backward(dA, self.layers[l - 1], l)
+                dA_prev, dW, dB = self.layers[l - 1].backward(dA, self.cache, l)
                 dA = dA_prev
-                print("2 dW: ", dW.shape)
+                print("2 dW: ", dW)
                 self.layers[l - 1].weights -= learning_rate * dW
                 self.layers[l - 1].biases -= learning_rate * dB
             val_pred, val_loss = self.forward_only()
