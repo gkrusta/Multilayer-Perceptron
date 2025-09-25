@@ -49,5 +49,4 @@ class Layer:
         dW = np.dot(dA_prev.T, dZ) / m
         dB = np.sum(dZ, axis=0, keepdims=True) / m
         dA_prev = np.dot(dZ, self.weights.T)
-        print("1 DW: ", dW)
         return dA_prev, dW, dB

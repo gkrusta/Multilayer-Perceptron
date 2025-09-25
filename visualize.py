@@ -1,8 +1,9 @@
 import matplotlib.pyplot as plt
 
 
-def plot_loss(loss, val_loss, acc, val_acc):
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(18,16))
+def plot_loss_accuracy(loss, val_loss, acc, val_acc):
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 9))
+    # --- Loss ---
     ax1.plot(loss)
     ax1.plot(val_loss)
     ax1.set_title("Loss", fontsize=22)
@@ -11,7 +12,8 @@ def plot_loss(loss, val_loss, acc, val_acc):
     ax1.set_ylabel('loss', fontsize=14)
     ax1.tick_params(axis='both', labelsize=12)
     ax1.grid(linestyle='-.')
-
+    
+    # --- Accuracy ---
     ax2.plot(acc)
     ax2.plot(val_acc)
     ax2.set_title("Accuracy", fontsize=22)
@@ -19,6 +21,7 @@ def plot_loss(loss, val_loss, acc, val_acc):
     ax2.set_xlabel('epochs', fontsize=14)
     ax2.set_ylabel('accuracy', fontsize=14)
     ax2.tick_params(axis='both', labelsize=12)
+    plt.tight_layout()
     plt.show()
 
 
