@@ -25,6 +25,17 @@ def open_file(file_path, header_in_file=True):
         exit(1)
 
 
+def save_params(model):
+    params = {}
+    params["topology"] = np.array(model.layer_sizes)
+
+    for i, layer in enumerate(model.layers, start=1):
+        params[f"W{i}"] = layer.weights
+        params[f"B{i}"] = layer.biases
+
+    np.savez("model.npz", **params)
+
+
 def relu(x):
     return x * (x > 0)
 
@@ -39,7 +50,4 @@ def relu_backward(x):
 def softmax(x):
     exp_logits = np.exp(x - np.max(x, axis=1, keepdims=True))
     return exp_logits / np.sum(exp_logits, axis=1, keepdims=True)
-
-
-#def softmax_backward(x):
     

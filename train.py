@@ -1,6 +1,6 @@
 import numpy as np
 import argparse
-from utils import open_file
+from utils import open_file, save_params
 from visualize import plot_loss_accuracy
 from layer import Layer
 from sklearn.metrics import accuracy_score
@@ -50,7 +50,7 @@ class NeuronalNetwork:
         self.history["acc"].append(acc)
         self.history["val_acc"].append(val_acc)
 
-
+# number of inputs needs to be batch size ?
     def create_layers(self, activation='relu', output_activation='softmax'):
         self.layer_sizes = [self.numer_of_inputs] + self.hiden_layers + [self.output_size]
         if len(self.hiden_layers) == 1:
@@ -132,6 +132,7 @@ def main():
     model.create_layers()
     model.train(model, args.learning_rate)
     plot_loss_accuracy(model.history['loss'], model.history['val_loss'], model.history['acc'], model.history['val_acc'])
+    save_params(model)
 
 
 if __name__ == "__main__":
