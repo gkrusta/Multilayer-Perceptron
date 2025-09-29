@@ -12,7 +12,6 @@ class Layer:
         self.activations = {}
 
 
-
     def forward(self, l, X):
         A = X
         Z = np.dot(X, self.weights) + self.biases

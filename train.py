@@ -4,18 +4,22 @@ from utils import open_file, save_params
 from visualize import plot_loss_accuracy
 from layer import Layer
 from sklearn.metrics import accuracy_score
+from base import BaseNetwork
 
 
-class NeuronalNetwork:
+class NeuronalNetwork(BaseNetwork):
     def __init__(self, train_set, test_set, layer, epochs, loss, batch_size):
+        super().__init__()
         self.df = open_file(train_set)
         self.test_set = open_file(test_set)
-        self.numer_of_inputs = self.df.drop(columns=['diagnosis']).shape[1]
-        self.hiden_layers = layer
+        Y = self.test_set.iloc[:, -1].values
+        self.test_Y = np.eye(2)[Y.astype(int)]
+        
+        self.configure(self.df.drop(columns=['diagnosis']).shape[1], self.test_Y, layer, output_size = 2)
+        
         self.X = self.df.iloc[:, :-1].values
         y = self.df.iloc[:, -1].values
         self.Y = np.eye(2)[y.astype(int)]
-        self.output_size = 2
         self.epochs = epochs
         self.loss = loss
         self.batch_size = batch_size
@@ -50,34 +54,6 @@ class NeuronalNetwork:
         self.history["acc"].append(acc)
         self.history["val_acc"].append(val_acc)
 
-# number of inputs needs to be batch size ?
-    def create_layers(self, activation='relu', output_activation='softmax'):
-        self.layer_sizes = [self.numer_of_inputs] + self.hiden_layers + [self.output_size]
-        if len(self.hiden_layers) == 1:
-            self.layer_sizes.insert(2, self.hiden_layers[0])
-
-        self.layers = []
-        for i in range(1, len(self.layer_sizes)):
-            act = output_activation if i == len(self.layer_sizes) - 1 else activation
-            layer = Layer(self.layer_sizes[i - 1], self.layer_sizes[i], act)
-            self.layers.append(layer)
-
-
-    def forward_only(self):
-        X = self.test_set.iloc[:, :-1].values
-        y = self.test_set.iloc[:, -1].values
-        self.test_Y = np.eye(2)[y.astype(int)]
-        val_cache = {'A0': X}
-
-        for l in range(1, len(self.layer_sizes)):
-            A_prev = val_cache[f'A{l - 1}']
-            prediction = self.layers[l - 1].forward(l, A_prev)
-            val_cache.update(prediction)
-
-        A_last = val_cache[f"A{len(self.layer_sizes) - 1}"]
-        val_loss, _ = self.layers[-1].categoricalCrossentropy(self.test_Y, A_last)
-        return A_last, val_loss
-
 
     def train(self, log, learning_rate):
         m = self.X.shape[0]
@@ -111,7 +87,7 @@ class NeuronalNetwork:
                     self.layers[l - 1].biases -= learning_rate * dB
 
             epoch_loss /= m // self.batch_size
-            val_pred, val_loss = self.forward_only()
+            val_pred, val_loss = self.forward_only(self.test_set, self.layers[l - 1].categoricalCrossentropy)
             self.save_metrics(epoch_loss, val_loss, val_pred, all_y_true, all_y_pred)
             log(epoch, epoch_loss, val_loss)
 
