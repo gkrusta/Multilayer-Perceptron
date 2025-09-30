@@ -1,11 +1,11 @@
 import argparse
 import numpy as np
-from train import NeuronalNetwork
+from base import BaseNetwork
 from layer import Layer
 from utils import open_file
 
 
-class Predict:
+class Predict(BaseNetwork):
     def __init__(self, data_set, test_set):
         try:
             data = np.load(data_set)

@@ -1,5 +1,7 @@
 import numpy as np
 import argparse
+import pickle
+from data_pipeline import Preprocessor
 from utils import open_file, save_params
 from visualize import plot_loss_accuracy
 from layer import Layer
@@ -10,8 +12,8 @@ from base import BaseNetwork
 class NeuronalNetwork(BaseNetwork):
     def __init__(self, train_set, test_set, layer, epochs, loss, batch_size):
         super().__init__()
-        self.df = open_file(train_set)
-        self.test_set = open_file(test_set)
+        self.df = train_set
+        self.test_set = test_set
         Y = self.test_set.iloc[:, -1].values
         self.test_Y = np.eye(2)[Y.astype(int)]
         
@@ -57,7 +59,7 @@ class NeuronalNetwork(BaseNetwork):
 
     def train(self, log, learning_rate):
         m = self.X.shape[0]
-        
+
         for epoch in range(1, self.epochs + 1):
             idx = np.random.permutation(m)
             X_shuffled, Y_shuffled = self.X[idx], self.Y[idx]
@@ -101,10 +103,20 @@ def main():
     parser.add_argument('--loss', type=str)
     parser.add_argument('--batch_size', type=int)
     parser.add_argument('--learning_rate', type=float)
-
     args = parser.parse_args()
 
-    model = NeuronalNetwork(args.train_set, args.test_set, args.layer, args.epochs, args.loss, args.batch_size)
+    pre = Preprocessor()
+    train_df = open_file(args.train_set)
+    test_df = open_file(args.test_set)
+
+    train_df = pre.fit(train_df)
+    test_df = pre.transform(test_df)
+
+    #Save preprocessor for later prediction
+    with open("preprocessor.pkl", "wb") as f:
+        pickle.dump(pre, f)
+
+    model = NeuronalNetwork(train_df, test_df, args.layer, args.epochs, args.loss, args.batch_size)
     model.create_layers()
     model.train(model, args.learning_rate)
     plot_loss_accuracy(model.history['loss'], model.history['val_loss'], model.history['acc'], model.history['val_acc'])
