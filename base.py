@@ -14,13 +14,22 @@ class BaseNetwork:
         self.layer_sizes = [self.input_size] + self.hidden_layers + [self.output_size]
 
 
-    def create_layers(self, activation='relu', output_activation='softmax'):
+    def create_layers(self, activation='relu', output_activation='softmax', params=None):
+        """
+        Create layers for the network using the correct activation formula
+        and random initialized wieghts for training program / precalcualted weights for predict program.
+        """
         if len(self.hidden_layers) == 1:
             self.layer_sizes.insert(2, self.hidden_layers[0])
 
         for i in range(1, len(self.layer_sizes)):
             act = output_activation if i == len(self.layer_sizes) - 1 else activation
-            layer = Layer(self.layer_sizes[i - 1], self.layer_sizes[i], act)
+            if params:
+                W = params[f"W{i}"]
+                B = params[f"B{i}"]
+                layer = Layer(self.layer_sizes[i - 1], self.layer_sizes[i], act, weights=W, biases=B)
+            else:
+                layer = Layer(self.layer_sizes[i - 1], self.layer_sizes[i], act)
             self.layers.append(layer)
 
 

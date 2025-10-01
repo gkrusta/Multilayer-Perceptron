@@ -4,7 +4,6 @@ import pickle
 from data_pipeline import Preprocessor
 from utils import open_file, save_params
 from visualize import plot_loss_accuracy
-from layer import Layer
 from sklearn.metrics import accuracy_score
 from base import BaseNetwork
 
@@ -16,8 +15,7 @@ class NeuronalNetwork(BaseNetwork):
         self.test_set = test_set
         Y = self.test_set.iloc[:, -1].values
         self.test_Y = np.eye(2)[Y.astype(int)]
-        
-        self.configure(self.df.drop(columns=['diagnosis']).shape[1], self.test_Y, layer, output_size = 2)
+        self.configure(self.df.drop(columns=['diagnosis']).shape[1], self.test_Y, layer, output_size=2)
         
         self.X = self.df.iloc[:, :-1].values
         y = self.df.iloc[:, -1].values

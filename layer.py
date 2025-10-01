@@ -3,10 +3,15 @@ from utils import relu, softmax, relu_backward
 
 
 class Layer:
-    def __init__(self, previous_l, current_l, activation):
-        limit = np.sqrt(6 / current_l)
-        self.weights = np.random.uniform(-limit, limit, size=(previous_l, current_l))
-        self.biases = np.zeros((1, current_l))
+    def __init__(self, previous_l, current_l, activation, weights=None, biases=None):
+        if weights is not None and biases is not None:
+            self.weights = weights
+            self.biases = biases
+        else:
+            limit = np.sqrt(6 / current_l)
+            self.weights = np.random.uniform(-limit, limit, size=(previous_l, current_l))
+            self.biases = np.zeros((1, current_l))
+
         print(f"Weights: {self.weights}\n Bias: {self.biases}")
         self.activation = activation
         self.activations = {}
