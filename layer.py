@@ -12,22 +12,9 @@ class Layer:
             self.weights = np.random.uniform(-limit, limit, size=(previous_l, current_l))
             self.biases = np.zeros((1, current_l))
 
-        print(f"Weights: {self.weights}\n Bias: {self.biases}")
+        #print(f"Weights: {self.weights}\n Bias: {self.biases}")
         self.activation = activation
         self.activations = {}
-
-
-    def forward(self, l, X):
-        A = X
-        Z = np.dot(X, self.weights) + self.biases
-        if self.activation == 'relu':
-            A = relu(Z)
-        else:
-            A = softmax(Z)
-        self.activations[f'Z{l}'] = Z
-        self.activations[f'A{l}'] = A
-
-        return self.activations
 
 
     def categoricalCrossentropy(self, y_true, y_pred):
@@ -36,8 +23,28 @@ class Layer:
         y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
         loss = -np.sum(y_true * np.log(y_pred)) / m
         dA = (y_pred - y_true)
-
         return loss, dA
+
+
+    def binary_cross_entropy(self, y_true, y_pred):
+        epsilon = 1e-12
+        m = len(self.num_values)
+        y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
+        loss = - np.sum(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred)) / m
+        return loss
+
+
+    def forward(self, l, X):
+        A = X
+        print(f"SHAPE x {X.shape}, SHPAPE w {self.weights.shape}, SHAPE b {self.biases.shape}")
+        Z = np.dot(X, self.weights) + self.biases
+        if self.activation == 'relu':
+            A = relu(Z)
+        else:
+            A = softmax(Z)
+        self.activations[f'Z{l}'] = Z
+        self.activations[f'A{l}'] = A
+        return self.activations
 
 
     def backward(self, dA, layer, l):
