@@ -28,15 +28,15 @@ class Layer:
 
     def binary_cross_entropy(self, y_true, y_pred):
         epsilon = 1e-12
-        m = len(self.num_values)
+        m = y_true.shape[0]
         y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
         loss = - np.sum(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred)) / m
-        return loss
+        return loss, None
 
 
     def forward(self, l, X):
         A = X
-        print(f"SHAPE x {X.shape}, SHPAPE w {self.weights.shape}, SHAPE b {self.biases.shape}")
+        #print(f"SHAPE x {X.shape}, SHPAPE w {self.weights.shape}, SHAPE b {self.biases.shape}")
         Z = np.dot(X, self.weights) + self.biases
         if self.activation == 'relu':
             A = relu(Z)

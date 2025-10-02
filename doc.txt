@@ -17,7 +17,7 @@ inputs mulyiplied by weights
 
 tests
 python3 ./train.py train.csv test.csv --layer 10 10 --epochs 100 --loss categoricalCrossentropy --batch_size 8 --learning_rate 0.01 
-python3 predict.py --weights model.npz --preprocessor preprocessor.pkl --input_set data.csv
+python3 prediction.py --weights model.npz --preprocessor preprocessor.pkl --input_set data.csv
 
 
 

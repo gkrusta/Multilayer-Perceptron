@@ -13,18 +13,23 @@ class Predict(BaseNetwork):
         except Exception as e:
             print(e)
             exit(1)
-        print("INPUT SET ")
-        layer = data["topology"]
-        input_size = test_set.drop(columns=['diagnosis']).shape[1]
-        self.y_true = test_set.iloc[:, -1].values
-        self.configure(input_size, self.y_true, layer, output_size=2)
+        layers = data["topology"]
+        input_size = layers[0]
+        hidden_layers = list(layers[1:-1])
+        self.test_set = test_set
+        if 'id' in test_set.columns:
+            self.test_set = self.test_set.drop(columns=['id'])
+        self.test_set['diagnosis'] = self.test_set['diagnosis'].map({'M': 1, 'B': 0})
+        Y = self.test_set.iloc[:, -1].values
+        self.test_Y = np.eye(2)[Y.astype(int)]
+        self.configure(input_size, self.test_Y, hidden_layers, output_size=2)
 
 
 def main():
     parser = argparse.ArgumentParser(description="Predicts")
-    parser.add_argument("weights", type=str)
-    parser.add_argument("preprocessor", type=str)
-    parser.add_argument("input_set", type=str)
+    parser.add_argument("--weights", type=str)
+    parser.add_argument("--preprocessor", type=str)
+    parser.add_argument("--input_set", type=str)
     args = parser.parse_args()
 
     with open(args.preprocessor, "rb") as f:
@@ -38,8 +43,8 @@ def main():
 
     predict = Predict(args.weights, data)
     predict.create_layers()
-    pred, loss  = predict.forward_only(data, predict.layers[-1].binary_cross_entropy)
-    accuracy = np.mean(np.argmax(pred, axis=1) == predict.y_true)
+    pred, loss  = predict.forward_only(predict.test_set, predict.layers[-1].binary_cross_entropy)
+    accuracy = np.mean(np.argmax(pred, axis=1) == np.argmax(predict.test_Y, axis=1))
     print(f"Loss: {loss}, Accuracy: {accuracy} %")
 
 
