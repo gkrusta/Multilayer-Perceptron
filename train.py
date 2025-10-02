@@ -54,7 +54,18 @@ class NeuronalNetwork(BaseNetwork):
         self.history["val_acc"].append(val_acc)
 
 
-    def train(self, log, learning_rate):
+    def adam_optimization(self, w, b, dw, db):
+        beta1 = 0.9
+        beta2 = 0.999
+        epsilon = 1e-8
+        eta = 0.01
+        m_dw, v_dw = 0, 0
+        m_db, v_db = 0, 0
+        
+
+
+
+    def train(self, log, learning_rate, optimization="adam"):
         m = self.X.shape[0]
 
         for epoch in range(1, self.epochs + 1):
@@ -82,8 +93,11 @@ class NeuronalNetwork(BaseNetwork):
                 for l in reversed(range(l, len(self.layer_sizes))):
                     dA_prev, dW, dB = self.layers[l - 1].backward(dA, self.cache, l)
                     dA = dA_prev
-                    self.layers[l - 1].weights -= learning_rate * dW
-                    self.layers[l - 1].biases -= learning_rate * dB
+                    if optimization == "sgd":
+                        self.layers[l - 1].weights -= learning_rate * dW
+                        self.layers[l - 1].biases -= learning_rate * dB
+                    else:
+                        self.adam_optimization()
 
             epoch_loss /= m // self.batch_size
             val_pred, val_loss = self.forward_only(self.test_set, self.layers[l - 1].categoricalCrossentropy)
@@ -93,13 +107,14 @@ class NeuronalNetwork(BaseNetwork):
 
 def main():
     parser = argparse.ArgumentParser(description='Predicts the cancer based on dataset')
-    parser.add_argument('train_set', type=str)
-    parser.add_argument('test_set', type=str)
-    parser.add_argument('--layer', nargs="+", type=int)
-    parser.add_argument('--epochs', type=int)
-    parser.add_argument('--loss', type=str)
-    parser.add_argument('--batch_size', type=int)
-    parser.add_argument('--learning_rate', type=float)
+    parser.add_argument('train_set', type=str, help="Path to training dataset (CSV)")
+    parser.add_argument('test_set', type=str, help="Path to test dataset (CSV)")
+    parser.add_argument('--layer', nargs="+", type=int, help="Hidden layer sizes (e.g. --layer 10 10)")
+    parser.add_argument('--epochs', type=int, help="Number of training epochs")
+    parser.add_argument('--loss', type=str, help="Loss function")
+    parser.add_argument('--batch_size', type=int, default=32, help="Mini-batch size")
+    parser.add_argument('--learning_rate', type=float, default=0.01, help="Learning rate")
+    parser.add_argument('--optimizer', type=str, choices=["adam", "sgd"], default="adam", help="Optimizer to use (default: adam, options: adam, sgd)")
     args = parser.parse_args()
 
     pre = Preprocessor()
@@ -115,7 +130,7 @@ def main():
 
     model = NeuronalNetwork(train_df, test_df, args.layer, args.epochs, args.loss, args.batch_size)
     model.create_layers()
-    model.train(model, args.learning_rate)
+    model.train(model, args.learning_rate, args.optimizer)
     plot_loss_accuracy(model.history['loss'], model.history['val_loss'], model.history['acc'], model.history['val_acc'])
     save_params(model)
 

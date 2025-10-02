@@ -25,8 +25,8 @@ class BaseNetwork:
         for i in range(1, len(self.layer_sizes)):
             act = output_activation if i == len(self.layer_sizes) - 1 else activation
             if params:
-                W = params[f"L{i}"]["W"]
-                B = params[f"L{i}"]["B"]
+                W = params[f"W{i}"]
+                B = params[f"B{i}"]
                 layer = Layer(self.layer_sizes[i - 1], self.layer_sizes[i], act, weights=W, biases=B)
             else:
                 layer = Layer(self.layer_sizes[i - 1], self.layer_sizes[i], act)

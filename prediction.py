@@ -13,7 +13,8 @@ class Predict(BaseNetwork):
         except Exception as e:
             print(e)
             exit(1)
-        layers = data["topology"]
+        self.params = {key: data[key] for key in data.files if key != 'topology'}
+        layers = data['topology']
         input_size = layers[0]
         hidden_layers = list(layers[1:-1])
         self.test_set = test_set
@@ -42,10 +43,10 @@ def main():
         exit(1)
 
     predict = Predict(args.weights, data)
-    predict.create_layers()
+    predict.create_layers(params=predict.params)
     pred, loss  = predict.forward_only(predict.test_set, predict.layers[-1].binary_cross_entropy)
     accuracy = np.mean(np.argmax(pred, axis=1) == np.argmax(predict.test_Y, axis=1))
-    print(f"Loss: {loss}, Accuracy: {accuracy} %")
+    print(f"Loss: {loss:.2f}, Accuracy: {accuracy * 100:.2f} %")
 
 
 if __name__ == "__main__":

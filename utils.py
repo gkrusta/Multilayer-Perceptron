@@ -30,10 +30,9 @@ def save_params(model):
     params["topology"] = np.array(model.layer_sizes)
 
     for i, layer in enumerate(model.layers, start=1):
-        params[f"L{i}"] = {
-            "W": layer.weights,
-            "B": layer.biases
-        }
+        params[f"W{i}"] = layer.weights
+        params[f"B{i}"] =  layer.biases
+
     np.savez("model.npz", **params)
 
 

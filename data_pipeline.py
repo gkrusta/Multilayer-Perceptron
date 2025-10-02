@@ -54,7 +54,6 @@ class Preprocessor:
         self.mean = train_set[self.features_to_keep].mean()
         self.std = train_set[self.features_to_keep].std()
         train_set = self.normalize(train_set)
-
         return train_set
 
 
