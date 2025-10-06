@@ -13,12 +13,36 @@ class Layer:
             self.biases = np.zeros((1, current_l))
 
         #print(f"Weights: {self.weights}\n Bias: {self.biases}")
+        self.m_dw = np.zeros_like(self.weights)
+        self.m_db = np.zeros_like(self.biases)
+        self.v_dw = np.zeros_like(self.weights)
+        self.v_db = np.zeros_like(self.biases)
         self.activation = activation
         self.activations = {}
 
 
+    def adam_optimization(self, dw, db, t):
+        beta1 = 0.9
+        beta2 = 0.999
+        epsilon = 1e-8
+        eta = 0.001
+
+        self.m_dw = beta1 * self.m_dw + (1 - beta1) * dw
+        self.m_db = beta1 * self.m_db + (1 - beta1) * db
+        self.v_dw = beta2 * self.v_dw + (1 - beta2) * (dw**2)
+        self.v_db = beta2 * self.v_db + (1 - beta2) * (db**2)
+
+        m_dw_corr = self.m_dw / (1 - beta1**t)
+        m_db_corr = self.m_db / (1 - beta1**t)
+        v_dw_corr = self.v_dw / (1 - beta2**t)
+        v_db_corr = self.v_db / (1 - beta2**t)
+
+        self.weights = self.weights - eta * (m_dw_corr / (np.sqrt(v_dw_corr) + epsilon))
+        self.biases = self.biases - eta * (m_db_corr / (np.sqrt(v_db_corr) + epsilon))
+
+
     def categoricalCrossentropy(self, y_true, y_pred):
-        epsilon = 1e-12
+        epsilon = 1e-15
         m = y_true.shape[0]
         y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
         loss = -np.sum(y_true * np.log(y_pred)) / m
@@ -27,7 +51,7 @@ class Layer:
 
 
     def binary_cross_entropy(self, y_true, y_pred):
-        epsilon = 1e-12
+        epsilon = 1e-15
         m = y_true.shape[0]
         y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
         loss = - np.sum(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred)) / m

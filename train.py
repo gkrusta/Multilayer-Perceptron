@@ -54,17 +54,6 @@ class NeuronalNetwork(BaseNetwork):
         self.history["val_acc"].append(val_acc)
 
 
-    def adam_optimization(self, w, b, dw, db):
-        beta1 = 0.9
-        beta2 = 0.999
-        epsilon = 1e-8
-        eta = 0.01
-        m_dw, v_dw = 0, 0
-        m_db, v_db = 0, 0
-        
-
-
-
     def train(self, log, learning_rate, optimization="adam"):
         m = self.X.shape[0]
 
@@ -97,7 +86,7 @@ class NeuronalNetwork(BaseNetwork):
                         self.layers[l - 1].weights -= learning_rate * dW
                         self.layers[l - 1].biases -= learning_rate * dB
                     else:
-                        self.adam_optimization()
+                        self.layers[l - 1].adam_optimization(dW, dB, epoch)
 
             epoch_loss /= m // self.batch_size
             val_pred, val_loss = self.forward_only(self.test_set, self.layers[l - 1].categoricalCrossentropy)
