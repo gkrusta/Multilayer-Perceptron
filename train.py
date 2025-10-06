@@ -86,7 +86,7 @@ class NeuronalNetwork(BaseNetwork):
                         self.layers[l - 1].weights -= learning_rate * dW
                         self.layers[l - 1].biases -= learning_rate * dB
                     else:
-                        self.layers[l - 1].adam_optimization(dW, dB, epoch)
+                        self.layers[l - 1].adam_optimization(dW, dB, epoch, learning_rate)
 
             epoch_loss /= m // self.batch_size
             val_pred, val_loss = self.forward_only(self.test_set, self.layers[l - 1].categoricalCrossentropy)

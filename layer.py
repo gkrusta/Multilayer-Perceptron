@@ -8,9 +8,10 @@ class Layer:
             self.weights = weights
             self.biases = biases
         else:
-            limit = np.sqrt(6 / current_l)
+            limit = np.sqrt(2.0 / previous_l)
             self.weights = np.random.uniform(-limit, limit, size=(previous_l, current_l))
-            self.biases = np.zeros((1, current_l))
+            self.biases = np.full((1, current_l), 0.01)
+
 
         #print(f"Weights: {self.weights}\n Bias: {self.biases}")
         self.m_dw = np.zeros_like(self.weights)
@@ -21,11 +22,10 @@ class Layer:
         self.activations = {}
 
 
-    def adam_optimization(self, dw, db, t):
+    def adam_optimization(self, dw, db, t, learning_rate):
         beta1 = 0.9
         beta2 = 0.999
         epsilon = 1e-8
-        eta = 0.001
 
         self.m_dw = beta1 * self.m_dw + (1 - beta1) * dw
         self.m_db = beta1 * self.m_db + (1 - beta1) * db
@@ -37,8 +37,8 @@ class Layer:
         v_dw_corr = self.v_dw / (1 - beta2**t)
         v_db_corr = self.v_db / (1 - beta2**t)
 
-        self.weights = self.weights - eta * (m_dw_corr / (np.sqrt(v_dw_corr) + epsilon))
-        self.biases = self.biases - eta * (m_db_corr / (np.sqrt(v_db_corr) + epsilon))
+        self.weights = self.weights - learning_rate * (m_dw_corr / (np.sqrt(v_dw_corr) + epsilon))
+        self.biases = self.biases - learning_rate * (m_db_corr / (np.sqrt(v_db_corr) + epsilon))
 
 
     def categoricalCrossentropy(self, y_true, y_pred):
