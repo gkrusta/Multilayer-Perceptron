@@ -41,13 +41,14 @@ def relu(x):
 
 
 def relu_backward(x):
-    if x > 0:
-        return x
-    else:
-        return 0
+    return (x > 0).astype(float) 
 
 
 def softmax(x):
     exp_logits = np.exp(x - np.max(x, axis=1, keepdims=True))
     return exp_logits / np.sum(exp_logits, axis=1, keepdims=True)
+
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
     

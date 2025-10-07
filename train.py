@@ -1,6 +1,7 @@
 import numpy as np
 import argparse
 import pickle
+import pandas as pd
 from data_pipeline import Preprocessor
 from utils import open_file, save_params
 from visualize import plot_loss_accuracy
@@ -24,6 +25,8 @@ class NeuronalNetwork(BaseNetwork):
         self.batch_size = batch_size
         self.cache = {}
         self.first = True
+        self.early_stop = False
+        self.stop_epoch = None
         self.history = {
             "loss": [],
             "val_loss": [],
@@ -56,6 +59,9 @@ class NeuronalNetwork(BaseNetwork):
 
     def train(self, log, learning_rate, optimization="adam"):
         m = self.X.shape[0]
+        best_val_loss = float('inf')
+        patience = 20
+        wait = 0
 
         for epoch in range(1, self.epochs + 1):
             idx = np.random.permutation(m)
@@ -88,10 +94,24 @@ class NeuronalNetwork(BaseNetwork):
                     else:
                         self.layers[l - 1].adam_optimization(dW, dB, epoch, learning_rate)
 
+            histor_rounded = {k : np.round(v, 4) for k, v in self.history.items()}
+            pd.DataFrame(histor_rounded).to_csv("metrics_history.csv", index=False)
+
             epoch_loss /= m // self.batch_size
             val_pred, val_loss = self.forward_only(self.test_set, self.layers[l - 1].categoricalCrossentropy)
             self.save_metrics(epoch_loss, val_loss, val_pred, all_y_true, all_y_pred)
-            log(epoch, epoch_loss, val_loss)
+            if (epoch % 10 == 0 or epoch == 1) and self.early_stop == False:
+                log(epoch, epoch_loss, val_loss)
+            if val_loss < best_val_loss:
+                best_val_loss = val_loss
+                wait = 0
+            else:
+                wait += 1
+                if wait >= patience and self.early_stop == False:
+                    self.stop_epoch = epoch
+                    print(f"Early stopping at {epoch}")
+                    self.early_stop = True
+                    save_params(self)
 
 
 def main():
@@ -120,8 +140,9 @@ def main():
     model = NeuronalNetwork(train_df, test_df, args.layer, args.epochs, args.loss, args.batch_size)
     model.create_layers()
     model.train(model, args.learning_rate, args.optimizer)
-    plot_loss_accuracy(model.history['loss'], model.history['val_loss'], model.history['acc'], model.history['val_acc'])
-    save_params(model)
+    plot_loss_accuracy(model.history, model.stop_epoch)
+    if model.early_stop == False:
+        save_params(model)
 
 
 if __name__ == "__main__":

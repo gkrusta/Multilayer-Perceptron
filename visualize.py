@@ -1,13 +1,20 @@
 import matplotlib.pyplot as plt
 
 
-def plot_loss_accuracy(loss, val_loss, acc, val_acc):
+def plot_loss_accuracy(dic, epoch):
+    loss = dic['loss']
+    val_loss = dic['val_loss']
+    acc = dic['acc']
+    val_acc = dic['val_acc']
+
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 9))
     # --- Loss ---
     ax1.plot(loss)
     ax1.plot(val_loss)
+    if epoch is not None:
+        ax1.axvline(x = epoch, color = 'r', linestyle = '--')
     ax1.set_title("Loss", fontsize=22)
-    ax1.legend(["training loss", "validation loss"])
+    ax1.legend(["training loss", "validation loss", "early stop"])
     ax1.set_xlabel('epochs', fontsize=14)
     ax1.set_ylabel('loss', fontsize=14)
     ax1.tick_params(axis='both', labelsize=12)
@@ -16,8 +23,10 @@ def plot_loss_accuracy(loss, val_loss, acc, val_acc):
     # --- Accuracy ---
     ax2.plot(acc)
     ax2.plot(val_acc)
+    if epoch is not None:
+        ax2.axvline(x = epoch, color = 'r', linestyle = '--')
     ax2.set_title("Accuracy", fontsize=22)
-    ax2.legend(["training acc", "validation acc"])
+    ax2.legend(["training acc", "validation acc", "early stop"])
     ax2.set_xlabel('epochs', fontsize=14)
     ax2.set_ylabel('accuracy', fontsize=14)
     ax2.tick_params(axis='both', labelsize=12)
