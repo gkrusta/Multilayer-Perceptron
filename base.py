@@ -34,7 +34,7 @@ class BaseNetwork:
 
 
     def forward_only(self, test_set, loss_fn):
-        X = test_set.iloc[:, :-1].values
+        X = test_set.iloc[:, 1:].values
         val_cache = {'A0': X}
 
         for l in range(1, len(self.layer_sizes)):

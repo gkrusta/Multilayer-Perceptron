@@ -15,9 +15,11 @@ class Preprocessor:
 
 
     def normalize(self, data_set):
-        train_features = data_set.drop(columns=['diagnosis'])
-        data_norm = (train_features - self.mean) / self.std
-        data_norm['diagnosis'] = data_set['diagnosis'].values
+        data_set.columns = range(data_set.shape[1])
+        features = data_set.iloc[:, 1:]
+        diagnosis_col = data_set.iloc[:, 0]
+        data_norm = (features - self.mean.values) / self.std.values
+        data_norm.insert(0, 0, diagnosis_col.values)
         return data_norm
 
 
@@ -59,7 +61,7 @@ class Preprocessor:
 
     def transform(self, data_set):
         print(self.features_to_keep)
-        cols = self.features_to_keep + ['diagnosis']
+        cols = ['diagnosis'] + self.features_to_keep
         df = data_set[cols]
         df = self.normalize(df)
         return df

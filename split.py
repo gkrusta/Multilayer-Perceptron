@@ -11,7 +11,6 @@ def split_dataset(df):
     grouped = df.groupby(df.diagnosis)
     b_grouped = grouped.get_group(0)
     m_grouped = grouped.get_group(1)
-
     b_test = b_grouped.sample(frac=fraction, random_state=42)
     m_test = m_grouped.sample(frac=fraction, random_state=42)
     b_train = b_grouped.drop(b_test.index)
@@ -24,14 +23,10 @@ def split_dataset(df):
 
 def parse(file_path):
     df = open_file(file_path, header_in_file=False)
-    #print("INFO: ", df.info())
     if 'id' in df.columns:
         df = df.drop(columns=['id'])
     df['diagnosis'] = df['diagnosis'].map({'M': 1, 'B': 0})
     return df
-    #df.hist(figsize=(12, 10), bins=20)
-    #plt.tight_layout()
-    #plt.show()
 
 
 def main():

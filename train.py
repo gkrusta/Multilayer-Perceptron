@@ -14,11 +14,11 @@ class NeuronalNetwork(BaseNetwork):
         super().__init__()
         self.df = train_set
         self.test_set = test_set
-        Y = self.test_set.iloc[:, -1].values
+        Y = self.test_set.iloc[:, 0].values
         self.test_Y = np.eye(2)[Y.astype(int)]
-        self.configure(self.df.drop(columns=['diagnosis']).shape[1], self.test_Y, layer, output_size=2)
-        self.X = self.df.iloc[:, :-1].values
-        y = self.df.iloc[:, -1].values
+        self.configure(self.df.iloc[:, 1:].shape[1], self.test_Y, layer, output_size=2)
+        self.X = self.df.iloc[:, 1:].values
+        y = self.df.iloc[:, 0].values
         self.Y = np.eye(2)[y.astype(int)]
         self.epochs = epochs
         self.loss = loss

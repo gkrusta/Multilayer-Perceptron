@@ -63,6 +63,3 @@ def plot_feature_histograms(df):
             index += 1
     plt.tight_layout()
     plt.show()
-    #df.hist(figsize=(12, 10), bins=20)
-    #plt.tight_layout()
-    #plt.show()
