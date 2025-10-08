@@ -3,9 +3,8 @@ import argparse
 import pickle
 import pandas as pd
 from data_pipeline import Preprocessor
-from utils import open_file, save_params
+from utils import open_file, save_params, accuracy_score, precision_score, recall_score, f1_score
 from visualize import plot_loss_accuracy
-from sklearn.metrics import accuracy_score
 from base import BaseNetwork
 
 
@@ -31,7 +30,13 @@ class NeuronalNetwork(BaseNetwork):
             "loss": [],
             "val_loss": [],
             "acc": [],
-            "val_acc": []
+            "val_acc": [],
+            "precision": [],
+            "val_precision": [],
+            "recall": [],
+            "val_recall": [],
+            "f1": [],
+            "val_f1": []
         }
 
 
@@ -43,18 +48,36 @@ class NeuronalNetwork(BaseNetwork):
         print(f"epoch {epoch:02d}/{self.epochs} - loss: {loss:.4f} - val_loss: {val_loss:.4f}")
 
 
-    def save_metrics(self, loss, val_loss, val_y_pred, all_y_true, all_y_pred):
+    def save_metrics(self, loss, val_loss, val_y_pred, all_y_true, all_y_pred) -> None:
+        # Convert one hot encoded arrays to true class index
         y_true = np.argmax(all_y_true, axis=1)
         y_pred = np.argmax(all_y_pred, axis=1)
         y_val_true = np.argmax(self.test_Y, axis=1)
         y_val_pred = np.argmax(val_y_pred, axis=1)
-        acc = accuracy_score(y_true, y_pred)
-        val_acc = accuracy_score(y_val_true, y_val_pred)
 
+        # --- Training metrics ---
+        acc = accuracy_score(y_true, y_pred)
+        precision = precision_score(y_true, y_pred)
+        recall = recall_score(y_true, y_pred)
+        f1 = f1_score(y_true, y_pred)
+
+        # --- Validation metrics ---
+        val_acc = accuracy_score(y_val_true, y_val_pred)
+        val_precision = precision_score(y_val_true, y_val_pred)
+        val_recall = recall_score(y_val_true, y_val_pred)
+        val_f1 = f1_score(y_val_true, y_val_pred)
+
+        # --- Save to history ---
         self.history["loss"].append(loss)
         self.history["val_loss"].append(val_loss)
         self.history["acc"].append(acc)
         self.history["val_acc"].append(val_acc)
+        self.history["precision"].append(precision)
+        self.history["recall"].append(recall)
+        self.history["f1"].append(f1)
+        self.history["val_precision"].append(val_precision)
+        self.history["val_recall"].append(val_recall)
+        self.history["val_f1"].append(val_f1)
 
 
     def train(self, log, learning_rate, optimization="adam"):

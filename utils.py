@@ -14,6 +14,8 @@ columns = [
 
 
 def open_file(file_path, header_in_file=True):
+    """Reads a CSV file and returns it as a pandas DataFrame
+    (with or without header)."""
     try:
         if header_in_file:
             data = pd.read_csv(file_path)
@@ -26,6 +28,7 @@ def open_file(file_path, header_in_file=True):
 
 
 def save_params(model):
+    """Saves all model layer weights, biases, and topology into 'model.npz'."""
     params = {}
     params["topology"] = np.array(model.layer_sizes)
 
@@ -37,18 +40,53 @@ def save_params(model):
 
 
 def relu(x):
+    """Returns x if positive, otherwise 0."""
     return x * (x > 0)
 
 
 def relu_backward(x):
-    return (x > 0).astype(float) 
+    """1 for positive inputs, 0 otherwise."""
+    return (x > 0).astype(float)
 
 
 def softmax(x):
+    """Converts logits to probabilities that sum to 1 across each row."""
     exp_logits = np.exp(x - np.max(x, axis=1, keepdims=True))
     return exp_logits / np.sum(exp_logits, axis=1, keepdims=True)
 
 
 def sigmoid(x):
+    """Squashes values into range (0, 1)."""
     return 1 / (1 + np.exp(-x))
-    
+
+
+def accuracy_score(y_true, y_pred):
+    """Percentage of correctly predicted samples."""
+    return np.sum(y_true == y_pred) / len(y_true)
+
+
+def precision_score(y_true, y_pred):
+    """Of all predicted positives how many were actually positive."""
+    TP = np.sum((y_pred == 1) & (y_true == 1))
+    FP = np.sum((y_pred == 1) & (y_true == 0))
+    if TP + FP == 0:
+        return 0.0
+    return TP / (TP + FP)
+
+
+def recall_score(y_true, y_pred):
+    """Of all actual positives, how many were correctly predicted."""
+    TP = np.sum((y_pred == 1) & (y_true == 1))
+    FN = np.sum((y_pred == 0) & (y_true == 1))
+    if TP + FN == 0:
+        return 0.0
+    return TP / (TP + FN)
+
+
+def f1_score(y_true, y_pred):
+    """Harmonic mean of precision and recall."""
+    precision = precision_score(y_true, y_pred)
+    recall = recall_score(y_true, y_pred)
+    if precision + recall == 0:
+        return 0.0
+    return 2 * (precision * recall) / (precision + recall)
