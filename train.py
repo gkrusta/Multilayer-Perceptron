@@ -42,7 +42,7 @@ class NeuronalNetwork(BaseNetwork):
 
     def __call__(self, epoch, loss, val_loss):
         if self.first:
-            print("x_train shape : ", self.df.shape)
+            print("\nx_train shape : ", self.df.shape)
             print("x_valid shape : ", self.test_set.shape)
             self.first = False
         print(f"epoch {epoch:02d}/{self.epochs} - loss: {loss:.4f} - val_loss: {val_loss:.4f}")
@@ -132,7 +132,7 @@ class NeuronalNetwork(BaseNetwork):
                 wait += 1
                 if wait >= patience and self.early_stop == False:
                     self.stop_epoch = epoch
-                    print(f"Early stopping at {epoch}")
+                    print(f"\nEarly stopping at {epoch}")
                     self.early_stop = True
                     save_params(self)
 
@@ -156,7 +156,7 @@ def main():
     train_df = pre.fit(train_df)
     test_df = pre.transform(test_df)
 
-    #Save preprocessor for later prediction
+    # Save preprocessor for later prediction
     with open("preprocessor.pkl", "wb") as f:
         pickle.dump(pre, f)
 

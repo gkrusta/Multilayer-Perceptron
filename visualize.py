@@ -2,12 +2,13 @@ import matplotlib.pyplot as plt
 
 
 def plot_loss_accuracy(dic, epoch):
+    """Shows 2 learning curve graphs displayed at the end of the training."""
     loss = dic['loss']
     val_loss = dic['val_loss']
     acc = dic['acc']
     val_acc = dic['val_acc']
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 9))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 14))
     # --- Loss ---
     ax1.plot(loss)
     ax1.plot(val_loss)
@@ -35,8 +36,9 @@ def plot_loss_accuracy(dic, epoch):
 
 
 def diagnosis_bar(df):
+    """Displays 2 bars showing which cases there are more- positive or negative."""
     counts = df["diagnosis"].value_counts().sort_index()
-    plt.figure(figsize=(10, 10))
+    plt.figure(figsize=(12, 12))
     plt.bar(counts.index, counts.values)
     for i, val in enumerate(counts.values):
         plt.text(counts.index[i], val + 4, str(val))
@@ -47,11 +49,12 @@ def diagnosis_bar(df):
 
 
 def plot_feature_histograms(df):
+    """Displays how different the distribution of clases is between features."""
     diagnosis_bar(df)
 
     features = [c for c in df.columns if c not in ["id", "diagnosis"]]
     rows, cols = 5, 6
-    fig, axes = plt.subplots(rows, cols, figsize=(12, 10))
+    fig, axes = plt.subplots(rows, cols, figsize=(18, 16))
     index = 0
     for i in range(rows):
         for j in range(cols):
