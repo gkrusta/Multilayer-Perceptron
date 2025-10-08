@@ -4,3 +4,24 @@ python3 train.py train.csv test.csv --layer 70 60 --epochs 400 --loss categorica
 python3 prediction.py --weights model.npz --preprocessor preprocessor.pkl --input_set data.csv
 
 
+
+Features kept:  ['radius_mean', 'texture_mean', 'perimeter_mean', 'area_mean', 'concavity_mean', 'concave_points_mean', 'perimeter_se', 'area_se', 'radius_worst', 'texture_worst', 'perimeter_worst', 'area_worst', 'smoothness_worst', 'concavity_worst', 'concave_points_worst']
+unsupported operand type(s) for -: 'str' and 'float'
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/gkrusta/intra-uuid-d93787a4-d421-4eaf-b6a5-5fde1836b109-6984478-gkrusta/train.py", line 172, in <module>
+    main()
+  File "/home/gkrusta/intra-uuid-d93787a4-d421-4eaf-b6a5-5fde1836b109-6984478-gkrusta/train.py", line 156, in main
+    train_df = pre.fit(train_df)
+  File "/home/gkrusta/intra-uuid-d93787a4-d421-4eaf-b6a5-5fde1836b109-6984478-gkrusta/data_pipeline.py", line 28, in fit
+    y = train_set['diagnosis']
+  File "/home/gkrusta/.local/lib/python3.10/site-packages/pandas/core/frame.py", line 4102, in __getitem__
+    indexer = self.columns.get_loc(key)
+  File "/home/gkrusta/.local/lib/python3.10/site-packages/pandas/core/indexes/base.py", line 3812, in get_loc
+    raise KeyError(key) from err
+KeyError: 'diagnosis'
+
+dont remove 
