@@ -9,8 +9,8 @@ fraction = 0.2
 
 def split_dataset(df):
     grouped = df.groupby(df.diagnosis)
-    b_grouped = grouped.get_group(0)
-    m_grouped = grouped.get_group(1)
+    b_grouped = grouped.get_group("B")
+    m_grouped = grouped.get_group("M")
     b_test = b_grouped.sample(frac=fraction, random_state=42)
     m_test = m_grouped.sample(frac=fraction, random_state=42)
     b_train = b_grouped.drop(b_test.index)
@@ -21,27 +21,19 @@ def split_dataset(df):
     return test, train
 
 
-def parse(file_path):
-    df = open_file(file_path, header_in_file=False)
-    if 'id' in df.columns:
-        df = df.drop(columns=['id'])
-    df['diagnosis'] = df['diagnosis'].map({'M': 1, 'B': 0})
-    return df
-
-
 def main():
     parser = argparse.ArgumentParser(description='EDA')
     parser.add_argument('dataset')
     parser.add_argument('--plots', action='store_true')
     args = parser.parse_args()
 
-    df = parse(args.dataset)
+    df = open_file(args.dataset, replace_label=False)
     if args.plots:
         plot_feature_histograms(df)
     
     test, train = split_dataset(df)
-    test.to_csv("test.csv", index=False)
-    train.to_csv("train.csv", index=False)
+    test.to_csv("test.csv", index=False, header=False)
+    train.to_csv("train.csv", index=False, header=False)
 
 
 if __name__ == "__main__":

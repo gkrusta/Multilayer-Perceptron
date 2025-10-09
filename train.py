@@ -151,8 +151,9 @@ def main():
 
     pre = Preprocessor()
     train_df = open_file(args.train_set)
-    test_df = open_file(args.test_set)
+    print(train_df)
 
+    test_df = open_file(args.test_set)
     train_df = pre.fit(train_df)
     test_df = pre.transform(test_df)
 

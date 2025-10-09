@@ -20,7 +20,6 @@ class Predict(BaseNetwork):
         self.test_set = test_set
         if 'id' in test_set.columns:
             self.test_set = self.test_set.drop(columns=['id'])
-        self.test_set.iloc[:, 0] = self.test_set.iloc[:, 0].map({'M': 1, 'B': 0})
         Y = self.test_set.iloc[:, 0].values
         self.test_Y = np.eye(2)[Y.astype(int)]
         self.configure(input_size, self.test_Y, hidden_layers, output_size=2)
@@ -36,7 +35,7 @@ def main():
     with open(args.preprocessor, "rb") as f:
         pre = pickle.load(f)
     try:
-        data = open_file(args.input_set, header_in_file=False)
+        data = open_file(args.input_set)
         data = pre.transform(data)
     except Exception as e:
         print(e)

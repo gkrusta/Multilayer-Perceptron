@@ -13,14 +13,14 @@ columns = [
 ]
 
 
-def open_file(file_path, header_in_file=True):
-    """Reads a CSV file and returns it as a pandas DataFrame
-    (with or without header)."""
+def open_file(file_path, replace_label=True):
+    """Reads a CSV file. removes first index column, puts numerical indexes to classes
+    and returns it as a pandas DataFrame (with or without header)."""
     try:
-        if header_in_file:
-            data = pd.read_csv(file_path)
-        else:
-            data = pd.read_csv(file_path, names=columns)
+        data = pd.read_csv(file_path, names=columns)
+        if replace_label:
+            data = data.drop(data.columns[0], axis=1)
+            data.iloc[:, 0] = data.iloc[:, 0].map({'M': 1, 'B': 0})
         return data
     except Exception as e:
         print(e)
