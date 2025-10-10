@@ -83,10 +83,13 @@ class NeuronalNetwork(BaseNetwork):
     def train(self, log, learning_rate, optimization="adam"):
         m = self.X.shape[0]
         best_val_loss = float('inf')
-        patience = 20
+        patience = 25
         wait = 0
+        base_lr = learning_rate
 
         for epoch in range(1, self.epochs + 1):
+            if epoch > 100:
+                learning_rate =  base_lr * 0.5 * (1 + np.cos(np.pi * epoch / self.epochs))
             idx = np.random.permutation(m)
             X_shuffled, Y_shuffled = self.X[idx], self.Y[idx]
             epoch_loss = 0
@@ -111,14 +114,15 @@ class NeuronalNetwork(BaseNetwork):
                 for l in reversed(range(l, len(self.layer_sizes))):
                     dA_prev, dW, dB = self.layers[l - 1].backward(dA, self.cache, l)
                     dA = dA_prev
+
                     if optimization == "sgd":
                         self.layers[l - 1].weights -= learning_rate * dW
                         self.layers[l - 1].biases -= learning_rate * dB
                     else:
                         self.layers[l - 1].adam_optimization(dW, dB, epoch, learning_rate)
 
-            histor_rounded = {k : np.round(v, 4) for k, v in self.history.items()}
-            pd.DataFrame(histor_rounded).to_csv("metrics_history.csv", index=False)
+            history_rounded = {k : np.round(v, 4) for k, v in self.history.items()}
+            pd.DataFrame(history_rounded).to_csv("metrics_history.csv", index=False)
 
             epoch_loss /= m // self.batch_size
             val_pred, val_loss = self.forward_only(self.test_set, self.layers[l - 1].categoricalCrossentropy)
@@ -141,7 +145,7 @@ def main():
     parser = argparse.ArgumentParser(description='Predicts the cancer based on dataset')
     parser.add_argument('train_set', type=str, help="Path to training dataset (CSV)")
     parser.add_argument('test_set', type=str, help="Path to test dataset (CSV)")
-    parser.add_argument('--layer', nargs="+", type=int, help="Hidden layer sizes (e.g. --layer 10 10)")
+    parser.add_argument('--layer', nargs="+", default=[70, 60], type=int, help="Hidden layer sizes (e.g. --layer 10 10)")
     parser.add_argument('--epochs', type=int, help="Number of training epochs")
     parser.add_argument('--loss', type=str, help="Loss function")
     parser.add_argument('--batch_size', type=int, default=32, help="Mini-batch size")
@@ -151,7 +155,6 @@ def main():
 
     pre = Preprocessor()
     train_df = open_file(args.train_set)
-    print(train_df)
 
     test_df = open_file(args.test_set)
     train_df = pre.fit(train_df)

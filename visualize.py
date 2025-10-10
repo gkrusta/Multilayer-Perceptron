@@ -32,7 +32,7 @@ def plot_loss_accuracy(dic, epoch):
     ax2.set_ylabel('accuracy', fontsize=14)
     ax2.tick_params(axis='both', labelsize=12)
     plt.tight_layout()
-    plt.show()
+    plt.savefig("plot_loss_accuracy.png")
 
 
 def diagnosis_bar(df):
@@ -45,7 +45,7 @@ def diagnosis_bar(df):
     plt.xlabel("diagnosis (B, M)")
     plt.ylabel("count")
     plt.tight_layout()
-    plt.show()
+    plt.savefig("diagnosis_bar.png")
 
 
 def plot_feature_histograms(df):
@@ -60,9 +60,10 @@ def plot_feature_histograms(df):
         for j in range(cols):
             feature = features[index]
             ax = axes[i][j]
-            ax.hist(df[df['diagnosis']==0][feature], alpha=0.5, label="B (0)")
-            ax.hist(df[df['diagnosis']==1][feature], alpha=0.5, label="M (1)")
+            ax.hist(df[df['diagnosis']=="B"][feature], alpha=0.5, label="B (0)")
+            ax.hist(df[df['diagnosis']=="M"][feature], alpha=0.5, label="M (1)")
             ax.set_title(feature)
             index += 1
+    
     plt.tight_layout()
-    plt.show()
+    plt.savefig("feature_histograms.png")

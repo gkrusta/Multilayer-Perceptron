@@ -8,9 +8,8 @@ class Layer:
             self.weights = weights
             self.biases = biases
         else:
-            limit = np.sqrt(2.0 / previous_l)
-            self.weights = np.random.uniform(-limit, limit, size=(previous_l, current_l))
-            self.biases = np.full((1, current_l), 0.01)
+            self.weights = np.random.randn(previous_l, current_l) * np.sqrt(2.0 / previous_l)
+            self.biases = np.zeros((1, current_l))
 
         self.m_dw = np.zeros_like(self.weights)
         self.m_db = np.zeros_like(self.biases)
@@ -25,18 +24,19 @@ class Layer:
         beta2 = 0.999
         epsilon = 1e-8
         lambda_ = 0.001
-        self.m_dw = beta1 * self.m_dw + (1 - beta1) * dw
+
+        self.m_dw = beta1 * self.m_dw + (1 - beta1) * (dw + lambda_ * self.weights)
         self.m_db = beta1 * self.m_db + (1 - beta1) * db
-        self.v_dw = beta2 * self.v_dw + (1 - beta2) * (dw**2)
-        self.v_db = beta2 * self.v_db + (1 - beta2) * (db**2)
+        self.v_dw = beta2 * self.v_dw + (1 - beta2) * ((dw + lambda_ * self.weights) ** 2)
+        self.v_db = beta2 * self.v_db + (1 - beta2) * (db ** 2)
 
-        m_dw_corr = self.m_dw / (1 - beta1**t)
-        m_db_corr = self.m_db / (1 - beta1**t)
-        v_dw_corr = self.v_dw / (1 - beta2**t)
-        v_db_corr = self.v_db / (1 - beta2**t)
+        m_dw_corr = self.m_dw / (1 - beta1 ** t)
+        v_dw_corr = self.v_dw / (1 - beta2 ** t)
+        m_db_corr = self.m_db / (1 - beta1 ** t)
+        v_db_corr = self.v_db / (1 - beta2 ** t)
 
-        self.weights = self.weights - learning_rate * (m_dw_corr / (np.sqrt(v_dw_corr) + epsilon) + lambda_ * self.weights)
-        self.biases = self.biases - learning_rate * (m_db_corr / (np.sqrt(v_db_corr) + epsilon))
+        self.weights -= learning_rate * (m_dw_corr / (np.sqrt(v_dw_corr) + epsilon))
+        self.biases -= learning_rate * (m_db_corr / (np.sqrt(v_db_corr) + epsilon))
 
 
     def categoricalCrossentropy(self, y_true, y_pred):

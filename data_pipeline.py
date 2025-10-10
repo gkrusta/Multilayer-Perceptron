@@ -3,7 +3,7 @@ from sklearn.metrics import roc_auc_score
 from sklearn.ensemble import RandomForestClassifier
 
 
-fraction = 0.01
+fraction = 0.007
 auc_threshold = 0.55
 
 
@@ -51,11 +51,12 @@ class Preprocessor:
             'importance': importances
         }).sort_values(by='importance', ascending=False)
 
-        print(feature_importance_df)
+        print("\n" + feature_importance_df.to_string(index=False))
         features_to_remove = feature_importance_df[feature_importance_df['importance'] <= fraction]['feature']
         train_set.drop(columns=features_to_remove, axis=1, inplace=True)
         
         self.features_to_keep = [c for c in train_set.columns if c != 'diagnosis']
+        print("\nFeatures kept:", self.features_to_keep)
 
         self.mean = train_set[self.features_to_keep].mean()
         self.std = train_set[self.features_to_keep].std()
@@ -66,7 +67,6 @@ class Preprocessor:
     def transform(self, data_set):
         """Makes the validation data set have the same column names as the training set obtained before
         and adds normalization."""
-        print(self.features_to_keep)
         cols = ['diagnosis'] + self.features_to_keep
         df = data_set[cols]
         df = self.normalize(df)
