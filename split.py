@@ -8,6 +8,7 @@ fraction = 0.2
 
 
 def split_dataset(df):
+    """Split dataset into test and traininf sets which have equal B and M distibution."""
     grouped = df.groupby(df.diagnosis)
     b_grouped = grouped.get_group("B")
     m_grouped = grouped.get_group("M")

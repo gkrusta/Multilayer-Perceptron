@@ -32,7 +32,7 @@ def main():
     parser.add_argument("--input_set", type=str)
     args = parser.parse_args()
 
-    with open(args.preprocessor, "rb") as f:
+    with open(args.preprocessor, "rb") as f: # apply the same normalizaton as to the training set
         pre = pickle.load(f)
     try:
         data = open_file(args.input_set)
@@ -43,7 +43,7 @@ def main():
 
     predict = Predict(args.weights, data)
     predict.create_layers(params=predict.params)
-    pred, loss  = predict.forward_only(predict.test_set, predict.layers[-1].binary_cross_entropy)
+    pred, loss  = predict.forward_only(predict.test_set, predict.layers[-1].categoricalCrossentropy)
     accuracy = np.mean(np.argmax(pred, axis=1) == np.argmax(predict.test_Y, axis=1))
     print(f"Loss: {loss:.2f}, Accuracy: {accuracy * 100:.2f} %")
 

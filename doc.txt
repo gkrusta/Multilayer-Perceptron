@@ -1,7 +1,8 @@
 tests
 python3 split.py data.csv --p
 python3 train.py train.csv test.csv --layer 70 60 --epochs 400 --loss categoricalCrossentropy --batch_size 10 --learning_rate 0.001
-python3 prediction.py --weights model.npz --preprocessor preprocessor.pkl --input_set data.csv
+python3 train.py data_training.csv data_test.csv --layer 12 12 --epochs 150 --loss categoricalCrossentropy --batch_size 16 --learning_rate 0.001
+python3 prediction.py --weights model.npz --preprocessor preprocessor.pkl --input_set test.csv
 
 
 

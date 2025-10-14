@@ -2,6 +2,7 @@ from layer import Layer
 
 
 class BaseNetwork:
+    """In charge of creating layers for both training and prediction program."""
     def __init__(self):
         self.layers = []
 
