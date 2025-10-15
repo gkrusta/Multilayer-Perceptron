@@ -43,7 +43,7 @@ def main():
 
     predict = Predict(args.weights, data)
     predict.create_layers(params=predict.params)
-    pred, loss  = predict.forward_only(predict.test_set, predict.layers[-1].categoricalCrossentropy)
+    pred, loss  = predict.forward_only(predict.test_set, predict.layers[-1].binary_cross_entropy)
     accuracy = np.mean(np.argmax(pred, axis=1) == np.argmax(predict.test_Y, axis=1))
     print(f"Loss: {loss:.2f}, Accuracy: {accuracy * 100:.2f} %")
 

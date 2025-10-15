@@ -44,7 +44,7 @@ class Layer:
         self.biases = self.biases - learning_rate * (m_db_corr / (np.sqrt(v_db_corr) + epsilon))
 
 
-    def categoricalCrossentropy(self, y_true, y_pred):
+    def categorical_cross_entropy(self, y_true, y_pred):
         """Computes categorical cross entropy loss and its gradient. The two output probabilities must sum to 1."""
         epsilon = 1e-15
         m = y_true.shape[0]

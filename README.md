@@ -52,7 +52,7 @@ See that in data_pipline.py.
 
 **2. Train the model**
 ```bash
-python3 train.py train.csv test.csv --layer 12 12 --epochs 150 --loss categoricalCrossentropy --batch_size 16 --learning_rate 0.001
+python3 train.py train.csv test.csv --layer 12 12 --epochs 150 --loss categorical_cross_entropy --batch_size 16 --learning_rate 0.001
 ```
 
 Example output:
