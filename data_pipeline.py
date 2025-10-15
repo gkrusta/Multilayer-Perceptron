@@ -19,7 +19,7 @@ class Preprocessor:
         data_set.columns = range(data_set.shape[1])
         features = data_set.iloc[:, 1:]
         diagnosis_col = data_set.iloc[:, 0]
-        data_norm = (features - self.mean.values) / self.std.values
+        data_norm = (features - self.mean.values) / self.std.values # normalization using train mean and std
         data_norm.insert(0, 0, diagnosis_col.values)
         return data_norm
 
