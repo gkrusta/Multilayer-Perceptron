@@ -57,7 +57,6 @@ def plot_precision_recall(dic, epoch):
     ax1.set_xlabel('epochs', fontsize=14)
     ax1.set_ylabel('loss', fontsize=14)
     ax1.tick_params(axis='both', labelsize=12)
-    ax1.grid(linestyle='-.')
     
     # --- Recall ---
     ax2.plot(recall)
