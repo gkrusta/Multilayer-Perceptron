@@ -4,7 +4,7 @@ import pickle
 import pandas as pd
 from data_pipeline import Preprocessor
 from utils import open_file, save_params, accuracy_score, precision_score, recall_score, f1_score
-from visualize import plot_loss_accuracy
+from visualize import plot_loss_accuracy, plot_precision_recall
 from base import BaseNetwork
 
 
@@ -174,6 +174,7 @@ def main():
     model.create_layers()
     model.train(model, args.learning_rate, args.optimizer)
     plot_loss_accuracy(model.history, model.stop_epoch)
+    plot_precision_recall(model.history, model.stop_epoch)
     if model.early_stop == False:
         save_params(model)
 
