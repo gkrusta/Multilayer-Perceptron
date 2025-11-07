@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D # for 3D plotting
+import numpy as np
 
 
 def plot_loss_accuracy(dic, epoch):
@@ -115,3 +117,32 @@ def plot_feature_histograms(df):
     
     plt.tight_layout()
     plt.savefig("feature_histograms.png")
+
+
+# wireframe plotting
+# Train  MLP once normally using Adam.
+# This gives final trained model with weights.
+# Pick 2 weight parameters (for example, W[0][0] and W[1][0]).
+# Create small variations around those weights:
+# Slightly increase/decrease them in small steps.
+# For each (theta 0, theta 1) combination, replace the weights in model temporarily.
+# Compute the loss for the training (or validation) set with these modified weights.
+# This gives the Z value for that (X,Y) pair.
+# Plot those (theta 0 , theta 1, loss) values as a wireframe.
+
+def plot_wireframe(X, Y, Z, title="Wireframe Plot", data_set):
+
+    """Plots a 3D wireframe given X, Y, Z coordinates."""
+    data = np.load(data_set, allow_pickle=True)
+    params = {key: data[key] for key in data.files if key != 'topology'}
+    w0 = params[f"W1"][0, 0]
+    w1 = params[f"W1"][1, 0]
+    fig = plt.figure(figsize=(10, 8))
+    ax = fig.add_subplot(111, projection='3d')
+    ax.plot_wireframe(X, Y, Z, rstride=5, cstride=5)
+    ax.set_title(title)
+    ax.set_xlabel('X axis')
+    ax.set_ylabel('Y axis')
+    ax.set_zlabel('Z axis')
+    plt.tight_layout()
+    plt.savefig("wireframe_plot.png")

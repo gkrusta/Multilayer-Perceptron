@@ -132,7 +132,7 @@ class NeuronalNetwork(BaseNetwork):
             pd.DataFrame(histor_rounded).to_csv("metrics_history.csv", index=False)
 
             epoch_loss /= m // self.batch_size # compute average loss + validation metrics
-            val_pred, val_loss = self.forward_only(self.test_set, self.layers[l - 1].categorical_cross_entropy)
+            val_pred, val_loss = self.forward_only(self.test_set, self.layers[-1].categorical_cross_entropy)
             self.save_metrics(epoch_loss, val_loss, val_pred, all_y_true, all_y_pred)
             if (epoch % 10 == 0 or epoch == 1) and self.early_stop == False:  # logging every 10 epochs
                 log(epoch, epoch_loss, val_loss)

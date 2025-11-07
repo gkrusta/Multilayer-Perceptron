@@ -50,7 +50,7 @@ class Layer:
         m = y_true.shape[0]
         y_pred = np.clip(y_pred, epsilon, 1 - epsilon)
         loss = -np.sum(y_true * np.log(y_pred)) / m
-        dA = (y_pred - y_true)
+        dA = (y_pred - y_true) # derivative of cross entropy with softmax
         return loss, dA
 
 
