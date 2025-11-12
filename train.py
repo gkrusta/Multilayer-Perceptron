@@ -148,6 +148,69 @@ class NeuronalNetwork(BaseNetwork):
                     save_params(self)
 
 
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D # for 3D plotting
+
+def plot_wireframe(self, model):
+    # --- 1) Load saved weights ---
+    params = np.load("model.npz", allow_pickle=True)
+    # Example if you saved with keys W1, B1, W2, B2, ...
+    # Build a dict
+    loaded = {k: params[k] for k in params.files}
+
+    for i, layer in enumerate(model.layers, start=1):
+        layer.weights = loaded[f"W{i}"].copy()
+        layer.biases  = loaded[f"B{i}"].copy()
+        
+    # --- 3) Pick two weight entries from one layer as axes ---
+    L = 2  # pick layer index in [1..num_layers], choose a hidden or output layer
+    W = model.layers[L-1].weights  # shape (out_dim, in_dim)
+    # pick two random coordinates in this W
+    rng = np.random.default_rng(42)
+    i1 = rng.integers(0, W.shape[0])
+    j1 = rng.integers(0, W.shape[1])
+    i2 = rng.integers(0, W.shape[0])
+    j2 = rng.integers(0, W.shape[1])
+
+    w1_orig = W[i1, j1].copy()
+    w2_orig = W[i2, j2].copy()
+
+    # --- 4) Build a grid of small perturbations around these two weights ---
+    n = 31
+    span1 = 0.25  # how far to move w1 (tune)
+    span2 = 0.25  # how far to move w2 (tune)
+    d1 = np.linspace(-span1, span1, n)
+    d2 = np.linspace(-span2, span2, n)
+    D1, D2 = np.meshgrid(d1, d2)
+
+    loss_surface = np.zeros_like(D1)
+
+
+    # --- 5) Sweep the grid: set weights → forward → loss ---
+    for a in range(n):
+        for b in range(n):
+            # set perturbed weights
+            model.layers[L-1].weights[i1, j1] = w1_orig + D1[a, b]
+            model.layers[L-1].weights[i2, j2] = w2_orig + D2[a, b]
+
+            # compute loss
+            loss_surface[a, b] = self.forward_only(self.test_set, self.layers[-1].categorical_cross_entropy)
+
+    # restore original weights (important!)
+    model.layers[L-1].weights[i1, j1] = w1_orig
+    model.layers[L-1].weights[i2, j2] = w2_orig
+
+    # --- 6) Plot wireframe: X=Δw1, Y=Δw2, Z=loss ---
+    fig = plt.figure(figsize=(8, 6))
+    ax = fig.add_subplot(111, projection='3d')
+    ax.plot_wireframe(D1, D2, loss_surface)  # keep default colors per your policy/tooling
+    ax.set_xlabel(f"ΔW[L={L}][{i1},{j1}]")
+    ax.set_ylabel(f"ΔW[L={L}][{i2},{j2}]")
+    ax.set_zlabel("Loss (categorical CE)")
+    ax.set_title("Loss Landscape around Trained Weights")
+    plt.show()
+
+
 def main():
     """Entry point for training the MLP model from the command line."""
     parser = argparse.ArgumentParser(description='Predicts the cancer based on dataset')
@@ -178,6 +241,7 @@ def main():
     plot_precision_recall(model.history, model.stop_epoch)
     if model.early_stop == False:
         save_params(model)
+    plot_wireframe(model)
 
 
 if __name__ == "__main__":

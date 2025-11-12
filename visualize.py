@@ -135,6 +135,7 @@ def plot_wireframe(X, Y, Z, title="Wireframe Plot", data_set):
     """Plots a 3D wireframe given X, Y, Z coordinates."""
     data = np.load(data_set, allow_pickle=True)
     params = {key: data[key] for key in data.files if key != 'topology'}
+    mo
     w0 = params[f"W1"][0, 0]
     w1 = params[f"W1"][1, 0]
     fig = plt.figure(figsize=(10, 8))
