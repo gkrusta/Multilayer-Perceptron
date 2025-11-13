@@ -2,45 +2,56 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D # for 3D plotting
 import numpy as np
 
-
+plt.style.use("seaborn-v0_8-darkgrid")   # modern clean style
+plt.rcParams["figure.dpi"] = 140          # crisp resolution
+plt.rcParams["font.size"] = 12
+plt.rcParams["axes.labelsize"] = 14
+plt.rcParams["axes.titlesize"] = 20
+plt.rcParams["legend.fontsize"] = 12
+plt.rcParams["axes.spines.top"] = False
+plt.rcParams["axes.spines.right"] = False
 def plot_loss_accuracy(dic, epoch):
-    """Shows 2 learning curve graphs displayed at the end of the training."""
     loss = dic['loss']
     val_loss = dic['val_loss']
     acc = dic['acc']
     val_acc = dic['val_acc']
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 10))
-    # --- Loss ---
-    ax1.plot(loss)
-    ax1.plot(val_loss)
-    if epoch is not None:
-        ax1.axvline(x = epoch, color = 'r', linestyle = '--')
-    ax1.set_title("Loss", fontsize=22)
-    ax1.legend(["training loss", "validation loss", "early stop"])
-    ax1.set_xlabel('epochs', fontsize=14)
-    ax1.set_ylabel('loss', fontsize=14)
-    ax1.tick_params(axis='both', labelsize=12)
-    ax1.grid(linestyle='-.')
-    
-    # --- Accuracy ---
-    ax2.plot(acc)
-    ax2.plot(val_acc)
-    if epoch is not None:
-        ax2.axvline(x = epoch, color = 'r', linestyle = '--')
-    ax2.set_title("Accuracy", fontsize=22)
-    ax2.legend(["training acc", "validation acc", "early stop"])
-    ax2.set_xlabel('epochs', fontsize=14)
-    ax2.set_ylabel('accuracy', fontsize=14)
-    ax2.tick_params(axis='both', labelsize=12)
-    plt.tight_layout()
-    plt.savefig("plot_loss_accuracy.png")
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(18, 7))
 
+    # --- Loss ---
+    ax1.plot(loss, color="#1f77b4", linewidth=2, label="Training Loss")
+    ax1.plot(val_loss, color="#ff7f0e", linewidth=2, label="Validation Loss")
+
+    if epoch is not None:
+        ax1.axvline(epoch, color="red", linestyle="--", linewidth=2, label="Early Stop")
+
+    ax1.set_title("Training vs Validation Loss")
+    ax1.set_xlabel("Epochs")
+    ax1.set_ylabel("Loss")
+    ax1.legend()
+    ax1.grid(True, linestyle="--", alpha=0.6)
+
+    # --- Accuracy ---
+    ax2.plot(acc, color="#2ca02c", linewidth=2, label="Training Accuracy")
+    ax2.plot(val_acc, color="#d62728", linewidth=2, label="Validation Accuracy")
+
+    if epoch is not None:
+        ax2.axvline(epoch, color="red", linestyle="--", linewidth=2)
+
+    ax2.set_title("Training vs Validation Accuracy")
+    ax2.set_xlabel("Epochs")
+    ax2.set_ylabel("Accuracy")
+    ax2.legend()
+    ax2.grid(True, linestyle="--", alpha=0.6)
+
+    plt.suptitle(
+        "Neural Network Training Curves\n(Data explored earlier using Random Forest & AUC score)",
+        fontsize=16
+    )
+    plt.tight_layout()
+    plt.savefig("plot_loss_accuracy.png", bbox_inches="tight")
 
 def plot_precision_recall(dic, epoch):
-    """Shows If validation precision ↑ and recall ↓, your model is getting too conservative (underfitting positives).
-    If both go down after some epochs, you’re overfitting.
-    If F1 stops improving, trigger early stopping there instead of only relying on loss.."""
     precision = dic['precision']
     val_precision = dic['val_precision']
     recall = dic['recall']
@@ -48,102 +59,91 @@ def plot_precision_recall(dic, epoch):
     f1 = dic['f1']
     val_f1 = dic['val_f1']
 
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(16, 8))
-    # --- Precision ---
-    ax1.plot(precision)
-    ax1.plot(val_precision)
-    if epoch is not None:
-        ax1.axvline(x = epoch, color = 'r', linestyle = '--')
-    ax1.set_title("Precision", fontsize=22)
-    ax1.legend(["training precision", "validation precision", "early stop"])
-    ax1.set_xlabel('epochs', fontsize=14)
-    ax1.set_ylabel('loss', fontsize=14)
-    ax1.tick_params(axis='both', labelsize=12)
-    
-    # --- Recall ---
-    ax2.plot(recall)
-    ax2.plot(val_recall)
-    if epoch is not None:
-        ax2.axvline(x = epoch, color = 'r', linestyle = '--')
-    ax2.set_title("Recall", fontsize=22)
-    ax2.legend(["training recall", "validation recall", "early stop"])
-    ax2.set_xlabel('epochs', fontsize=14)
-    ax2.set_ylabel('accuracy', fontsize=14)
-    ax2.tick_params(axis='both', labelsize=12)
+    fig, axes = plt.subplots(1, 3, figsize=(20, 6))
+    titles = ["Precision", "Recall", "F1 Score"]
+    colors = [["#1f77b4", "#ff7f0e"], ["#2ca02c", "#d62728"], ["#9467bd", "#8c564b"]]
+    data = [
+        (precision, val_precision),
+        (recall, val_recall),
+        (f1, val_f1),
+    ]
 
-    # --- F1 ---
-    ax3.plot(f1)
-    ax3.plot(val_f1)
-    if epoch is not None:
-        ax3.axvline(x = epoch, color = 'r', linestyle = '--')
-    ax3.set_title("f1", fontsize=22)
-    ax3.legend(["training f1", "validation f1", "early stop"])
-    ax3.set_xlabel('epochs', fontsize=14)
-    ax3.set_ylabel('accuracy', fontsize=14)
-    ax3.tick_params(axis='both', labelsize=12)
+    for ax, title, (train, val), (c1, c2) in zip(axes, titles, data, colors):
+        ax.plot(train, color=c1, linewidth=2, label="Train")
+        ax.plot(val, color=c2, linewidth=2, label="Validation")
+
+        if epoch is not None:
+            ax.axvline(epoch, color="red", linestyle="--", linewidth=2, label="Early Stop")
+
+        ax.set_title(title)
+        ax.set_xlabel("Epochs")
+        ax.set_ylabel(title)
+        ax.legend()
+        ax.grid(True, linestyle="--", alpha=0.6)
+
+    plt.suptitle(
+        "Precision, Recall, and F1 Trends\n",
+        fontsize=16
+    )
     plt.tight_layout()
-    plt.savefig("plot_precision_recall.png")
-
+    plt.savefig("plot_precision_recall.png", bbox_inches="tight")
 
 def diagnosis_bar(df):
-    """Displays 2 bars showing which cases there are more- positive or negative."""
     counts = df["diagnosis"].value_counts().sort_index()
-    plt.figure(figsize=(12, 12))
-    plt.bar(counts.index, counts.values)
-    for i, val in enumerate(counts.values):
-        plt.text(counts.index[i], val + 4, str(val))
-    plt.xlabel("diagnosis (B, M)")
-    plt.ylabel("count")
+    plt.figure(figsize=(8, 7))
+
+    bars = plt.bar(
+        counts.index,
+        counts.values,
+        color=["#1f77b4", "#d62728"],
+        edgecolor="black"
+    )
+
+    for bar in bars:
+        y = bar.get_height()
+        plt.text(
+            bar.get_x() + bar.get_width()/2,
+            y + max(counts.values)*0.02,
+            str(int(y)),
+            ha="center",
+            fontsize=14,
+            fontweight="bold",
+            color="black"
+        )
+
+    plt.title("Diagnosis Distribution\n(B = Benign, M = Malignant)", fontsize=18)
+    plt.xlabel("Diagnosis")
+    plt.ylabel("Count")
     plt.tight_layout()
-    plt.savefig("diagnosis_bar.png")
+    plt.savefig("diagnosis_bar.png", bbox_inches="tight")
 
 
 def plot_feature_histograms(df):
-    """Displays how different the distribution of clases is between features."""
     diagnosis_bar(df)
 
     features = [c for c in df.columns if c not in ["id", "diagnosis"]]
     rows, cols = 5, 6
-    fig, axes = plt.subplots(rows, cols, figsize=(16, 16))
+    fig, axes = plt.subplots(rows, cols, figsize=(20, 16))
     index = 0
+
     for i in range(rows):
         for j in range(cols):
-            feature = features[index]
             ax = axes[i][j]
-            ax.hist(df[df['diagnosis']=="B"][feature], alpha=0.5, label="B (0)")
-            ax.hist(df[df['diagnosis']=="M"][feature], alpha=0.5, label="M (1)")
-            ax.set_title(feature)
+            feature = features[index]
+
+            ax.hist(df[df["diagnosis"] == "B"][feature], bins=20, alpha=0.5, color="#1f77b4")
+            ax.hist(df[df["diagnosis"] == "M"][feature], bins=20, alpha=0.5, color="#d62728")
+
+            ax.set_title(feature, fontsize=10)
+            ax.tick_params(axis='both', labelsize=8)
+            ax.set_yticks([])
             index += 1
-    
-    plt.tight_layout()
-    plt.savefig("feature_histograms.png")
 
+    fig.legend(["Benign", "Malignant"], loc="lower center", fontsize=14)
+    plt.suptitle(
+        "Feature Distributions by Diagnosis",
+        fontsize=16
+    )
+    plt.tight_layout(rect=[0, 0.04, 1, 1])
+    plt.savefig("feature_histograms.png", bbox_inches="tight")
 
-# wireframe plotting
-# Train  MLP once normally using Adam.
-# This gives final trained model with weights.
-# Pick 2 weight parameters (for example, W[0][0] and W[1][0]).
-# Create small variations around those weights:
-# Slightly increase/decrease them in small steps.
-# For each (theta 0, theta 1) combination, replace the weights in model temporarily.
-# Compute the loss for the training (or validation) set with these modified weights.
-# This gives the Z value for that (X,Y) pair.
-# Plot those (theta 0 , theta 1, loss) values as a wireframe.
-
-def plot_wireframe(X, Y, Z, title="Wireframe Plot", data_set):
-
-    """Plots a 3D wireframe given X, Y, Z coordinates."""
-    data = np.load(data_set, allow_pickle=True)
-    params = {key: data[key] for key in data.files if key != 'topology'}
-    mo
-    w0 = params[f"W1"][0, 0]
-    w1 = params[f"W1"][1, 0]
-    fig = plt.figure(figsize=(10, 8))
-    ax = fig.add_subplot(111, projection='3d')
-    ax.plot_wireframe(X, Y, Z, rstride=5, cstride=5)
-    ax.set_title(title)
-    ax.set_xlabel('X axis')
-    ax.set_ylabel('Y axis')
-    ax.set_zlabel('Z axis')
-    plt.tight_layout()
-    plt.savefig("wireframe_plot.png")
