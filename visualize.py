@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D # for 3D plotting
 import numpy as np
+from sklearn.decomposition import PCA
+
 
 plt.style.use("seaborn-v0_8-darkgrid")   # modern clean style
 plt.rcParams["figure.dpi"] = 140          # crisp resolution
@@ -147,3 +149,130 @@ def plot_feature_histograms(df):
     plt.tight_layout(rect=[0, 0.04, 1, 1])
     plt.savefig("feature_histograms.png", bbox_inches="tight")
 
+
+def _flatten_params(model):
+    theta_list = []
+    shapes = []
+    for layer in model.layers:
+        shapes.append(layer.weights.shape)
+        theta_list.append(layer.weights.flatten())
+        shapes.append(layer.biases.shape)
+        theta_list.append(layer.biases.flatten())
+    return np.concatenate(theta_list), shapes
+
+
+def _unflatten_params(model, flat, shapes):
+    idx = 0
+    ptr = 0
+    for layer in model.layers:
+        w_shape = shapes[ptr]; ptr += 1
+        size = np.prod(w_shape)
+        layer.weights = flat[idx:idx+size].reshape(w_shape)
+        idx += size
+
+        b_shape = shapes[ptr]; ptr += 1
+        size = np.prod(b_shape)
+        layer.biases = flat[idx:idx+size].reshape(b_shape)
+        idx += size
+
+
+def plot_true_loss_landscape(model, span=10.0, n=61):
+    """
+    2D Loss Landscape + Optimizer Path (aligned):
+    - PCA from actual optimizer trajectory
+    - Surface heatmap
+    - Optimizer path on the surface (black line)
+    """
+
+    # Flatten original parameters
+    theta_orig, shapes = _flatten_params(model)
+    d = theta_orig.size
+    print(f"[INFO] Total parameters: {d}")
+
+    theta_history = np.array(model.theta_history)
+    print(f"[INFO] Optimizer steps recorded: {theta_history.shape[0]}")
+
+    # Compute theta0 for PCA
+    delta = theta_history - theta_history[0]   # (steps, d)
+    
+    # PCA directions from training trajectory
+    pca = PCA(n_components=2)
+    pca.fit(delta)
+
+    U = pca.components_[0]
+    V = pca.components_[1]
+
+    U /= np.linalg.norm(U)
+    V /= np.linalg.norm(V)
+
+    #Project training path into alfa-beta coordinates
+    alpha_path = delta @ U
+    beta_path  = delta @ V
+
+    # Stretch the path to fill the span visually
+    path_scale = span / (np.max(np.abs(alpha_path)) + 1e-8)
+    alpha_path *= path_scale
+    beta_path  *= path_scale
+
+    # PCA grid
+    alphas = np.linspace(-span, span, n)
+    betas  = np.linspace(-span, span, n)
+    A, B = np.meshgrid(alphas, betas)
+    Z = np.zeros_like(A)
+
+    # compute Z for each grid point
+    print("[INFO] Computing loss surface…")
+
+    for i in range(n):
+        for j in range(n):
+            θ_new = theta_orig + A[i, j] * U + B[i, j] * V
+            _unflatten_params(model, θ_new, shapes.copy())
+
+            _, loss = model.forward_only(model.test_set, model.layers[-1].categorical_cross_entropy)
+            Z[i, j] = loss
+
+    # Restore the original weights
+    _unflatten_params(model, theta_orig, shapes.copy())
+
+    # Normalize
+    Z = Z - Z.min()
+
+    # Compute Z positions for optimizer path so line lies ON surface
+    Z_path = []
+    for a, b in zip(alpha_path, beta_path):
+        i = np.argmin(np.abs(alphas - a))
+        j = np.argmin(np.abs(betas - b))
+        Z_path.append(Z[i, j])
+
+    Z_path = np.array(Z_path) + 0.02  # Slight lift above surface
+
+    # Plot: surface + optimizer path
+    fig = plt.figure(figsize=(11, 8))
+    ax = fig.add_subplot(111, projection='3d')
+
+    surf = ax.plot_surface(
+        A, B, Z,
+        cmap="viridis",
+        edgecolor='none',
+        antialiased=True
+    )
+    ax.plot(
+        alpha_path,
+        beta_path,
+        Z_path,
+        color='black',
+        linewidth=2,
+        marker='o',
+        markersize=3,
+        zorder=999, 
+        label="Optimizer Path"
+    )
+
+    ax.set_xlabel("α (PCA direction 1)")
+    ax.set_ylabel("β (PCA direction 2)")
+    ax.set_zlabel("Loss (normalized)")
+    ax.set_title("Loss Landscape with Optimizer Path (Aligned with PCA)")
+    ax.legend()
+
+    fig.colorbar(surf, shrink=0.6)
+    plt.savefig("landscape_loss.png", bbox_inches="tight")

@@ -4,13 +4,8 @@ import pickle
 import pandas as pd
 from data_pipeline import Preprocessor
 from utils import open_file, save_params, accuracy_score, precision_score, recall_score, f1_score
-from visualize import plot_loss_accuracy, plot_precision_recall
+from visualize import plot_loss_accuracy, plot_precision_recall, _flatten_params, plot_true_loss_landscape
 from base import BaseNetwork
-
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D # for 3D plotting
-from sklearn.decomposition import PCA
-import imageio
 
 
 class NeuronalNetwork(BaseNetwork):
@@ -93,30 +88,6 @@ class NeuronalNetwork(BaseNetwork):
         self.history["val_recall"].append(val_recall)
         self.history["val_f1"].append(val_f1)
 
-    def _flatten_params(self):
-        theta_list = []
-        shapes = []
-        for layer in self.layers:
-            shapes.append(layer.weights.shape)
-            theta_list.append(layer.weights.flatten())
-            shapes.append(layer.biases.shape)
-            theta_list.append(layer.biases.flatten())
-        return np.concatenate(theta_list), shapes
-
-
-    def _unflatten_params(self, flat, shapes):
-        idx = 0
-        ptr = 0
-        for layer in self.layers:
-            w_shape = shapes[ptr]; ptr += 1
-            size = np.prod(w_shape)
-            layer.weights = flat[idx:idx+size].reshape(w_shape)
-            idx += size
-
-            b_shape = shapes[ptr]; ptr += 1
-            size = np.prod(b_shape)
-            layer.biases = flat[idx:idx+size].reshape(b_shape)
-            idx += size
 
     def train(self, log, learning_rate, optimization="adam"):
         """Main training loop with mini-batch gradient descent,
@@ -157,7 +128,7 @@ class NeuronalNetwork(BaseNetwork):
                         self.layers[l - 1].biases -= learning_rate * dB
                     else:
                         self.layers[l - 1].adam_optimization(dW, dB, epoch, learning_rate)
-                    theta, _ = self._flatten_params()
+                    theta, _ = _flatten_params(self)
                     self.theta_history.append(theta.copy())
 
             histor_rounded = {k : np.round(v, 4) for k, v in self.history.items()} # save metrics to CSV each epoch
@@ -178,129 +149,6 @@ class NeuronalNetwork(BaseNetwork):
                     self.early_stop = True
                     self.stop_epoch = epoch
                     save_params(self)
-
-
-    def plot_true_loss_landscape(self, span=10.0, n=61):
-        """
-        2D Loss Landscape + Optimizer Path (aligned):
-        - PCA from actual optimizer trajectory
-        - Surface heatmap
-        - Optimizer path ON the surface (black line)
-        """
-
-        import numpy as np
-        import matplotlib.pyplot as plt
-        from sklearn.decomposition import PCA
-
-        # -----------------------------------------------------------
-        # 1. Flatten original parameters
-        # -----------------------------------------------------------
-        theta_orig, shapes = self._flatten_params()
-        d = theta_orig.size
-        print(f"[INFO] Total parameters: {d}")
-
-        theta_history = np.array(self.theta_history)
-        print(f"[INFO] Optimizer steps recorded: {theta_history.shape[0]}")
-
-        # Compute Δθ for PCA
-        delta = theta_history - theta_history[0]   # (steps, d)
-
-        # -----------------------------------------------------------
-        # 2. PCA directions from training trajectory
-        # -----------------------------------------------------------
-        pca = PCA(n_components=2)
-        pca.fit(delta)
-
-        U = pca.components_[0]
-        V = pca.components_[1]
-
-        U /= np.linalg.norm(U)
-        V /= np.linalg.norm(V)
-
-        # -----------------------------------------------------------
-        # 3. Project training path into α–β coordinates
-        # -----------------------------------------------------------
-        alpha_path = delta @ U
-        beta_path  = delta @ V
-
-        # Stretch the path to fill the span visually
-        path_scale = span / (np.max(np.abs(alpha_path)) + 1e-8)
-        alpha_path *= path_scale
-        beta_path  *= path_scale
-
-        # -----------------------------------------------------------
-        # 4. Build the PCA grid
-        # -----------------------------------------------------------
-        alphas = np.linspace(-span, span, n)
-        betas  = np.linspace(-span, span, n)
-        A, B = np.meshgrid(alphas, betas)
-        Z = np.zeros_like(A)
-
-        # -----------------------------------------------------------
-        # 5. Sweep the loss landscape: compute Z for each grid point
-        # -----------------------------------------------------------
-        print("[INFO] Computing loss surface…")
-
-        for i in range(n):
-            for j in range(n):
-                θ_new = theta_orig + A[i, j] * U + B[i, j] * V
-                self._unflatten_params(θ_new, shapes.copy())
-
-                _, loss = self.forward_only(self.test_set, self.layers[-1].categorical_cross_entropy)
-                Z[i, j] = loss
-
-        # Restore the original weights
-        self._unflatten_params(theta_orig, shapes.copy())
-
-        # Normalize Z for visual contrast
-        Z = Z - Z.min()
-
-        # -----------------------------------------------------------
-        # 6. Compute Z positions for optimizer path (so line lies ON surface)
-        # -----------------------------------------------------------
-        Z_path = []
-        for a, b in zip(alpha_path, beta_path):
-            i = np.argmin(np.abs(alphas - a))
-            j = np.argmin(np.abs(betas - b))
-            Z_path.append(Z[i, j])
-
-        Z_path = np.array(Z_path) + 0.02  # Slight lift above surface
-
-        # -----------------------------------------------------------
-        # 7. Plot: surface + optimizer path
-        # -----------------------------------------------------------
-        fig = plt.figure(figsize=(11, 8))
-        ax = fig.add_subplot(111, projection='3d')
-
-        surf = ax.plot_surface(
-            A, B, Z,
-            cmap="viridis",
-            edgecolor='none',
-            antialiased=True
-        )
-
-        ax.plot(
-            alpha_path,
-            beta_path,
-            Z_path,
-            color='black',
-            linewidth=2,
-            marker='o',
-            markersize=3,
-            zorder=999, 
-            label="Optimizer Path"
-        )
-
-        ax.set_xlabel("α (PCA direction 1)")
-        ax.set_ylabel("β (PCA direction 2)")
-        ax.set_zlabel("Loss (normalized)")
-        ax.set_title("Loss Landscape with Optimizer Path (Aligned with PCA)")
-        ax.legend()
-
-        fig.colorbar(surf, shrink=0.6)
-        plt.show()
-
-        print("[INFO] Landscape + optimizer path generated successfully.")
 
 
 def main():
@@ -333,7 +181,7 @@ def main():
     plot_precision_recall(model.history, model.stop_epoch)
     if model.early_stop == False:
         save_params(model)
-    model.plot_true_loss_landscape()
+    plot_true_loss_landscape(model)
 
 
 if __name__ == "__main__":

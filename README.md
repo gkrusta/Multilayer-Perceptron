@@ -3,6 +3,7 @@ Multilayer Perceptron implementation from scratch in Python.
 
 The model is applied to a **binary classification problem** (Breast Cancer dataset) to predict whether a tumor is malignant or benign.
 
+![landscape](landscape_loss.png)
 
 ##  Features
 - Implemented from scratch with pure **NumPy**
